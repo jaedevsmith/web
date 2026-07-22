@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Modality Picker | University of South Alabama</title>
+<style>
+  :root {
+    --usa-blue: #00205B;
+    --usa-red: #BA0C2F;
+    --usa-red-dark: #8f0a24;
+    --bg: #f4f5f9;
+    --card: #ffffff;
+    --text: #1a2233;
+    --muted: #5b6478;
+    --border: #e2e5ee;
+    --gold: #f0b323;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--usa-blue);
+    color: #fff;
+    padding: 28px 20px 24px;
+    text-align: center;
+    border-bottom: 5px solid var(--usa-red);
+  }
+  .header h1 { font-size: 1.7rem; letter-spacing: .3px; }
+  .header p { margin-top: 6px; font-size: .95rem; opacity: .85; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* Progress */
+  .progress-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+  }
+  .progress-label { font-size: .85rem; font-weight: 600; color: var(--usa-blue); white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 10px; background: var(--border); border-radius: 6px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, var(--usa-red), var(--usa-red-dark));
+    border-radius: 6px; transition: width .35s ease;
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px; box-shadow: 0 2px 10px rgba(0,32,91,.06);
+    animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .q-number { font-size: .8rem; font-weight: 700; color: var(--usa-red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .q-text { font-size: 1.25rem; font-weight: 700; color: var(--usa-blue); margin-bottom: 6px; }
+  .q-help { font-size: .92rem; color: var(--muted); margin-bottom: 18px; }
+
+  .opt {
+    display: block; width: 100%; text-align: left;
+    background: #fff; border: 2px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+    font-size: 1rem; color: var(--text); font-family: inherit;
+    transition: border-color .15s, background .15s, transform .1s;
+  }
+  .opt:hover { border-color: var(--usa-blue); background: #f7f9ff; }
+  .opt:active { transform: scale(.99); }
+  .opt.selected { border-color: var(--usa-red); background: #fdf3f5; }
+  .opt .opt-title { font-weight: 600; }
+  .opt .opt-sub { display: block; font-size: .85rem; color: var(--muted); margin-top: 2px; }
+
+  .nav-row { display: flex; justify-content: space-between; margin-top: 18px; }
+  .btn {
+    font-family: inherit; font-size: .95rem; font-weight: 600; cursor: pointer;
+    border-radius: 8px; padding: 10px 22px; border: none; transition: background .15s;
+  }
+  .btn-back { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-back:hover { background: var(--border); }
+  .btn-back:disabled { opacity: .4; cursor: default; }
+  .btn-primary { background: var(--usa-red); color: #fff; }
+  .btn-primary:hover { background: var(--usa-red-dark); }
+  .btn-blue { background: var(--usa-blue); color: #fff; }
+  .btn-blue:hover { background: #001743; }
+
+  /* Intro */
+  .intro { text-align: center; }
+  .intro h2 { color: var(--usa-blue); font-size: 1.5rem; margin-bottom: 12px; }
+  .intro p { color: var(--muted); margin-bottom: 10px; line-height: 1.55; }
+  .modality-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 22px; }
+  .chip {
+    background: #eef1f8; color: var(--usa-blue); font-size: .82rem; font-weight: 600;
+    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .chip:hover, .chip.active { border-color: var(--usa-red); background: #fdf3f5; }
+  .chip-hint { font-size: .8rem; color: var(--muted); margin-top: -12px; margin-bottom: 18px; }
+
+  /* Modality hover popover */
+  .modality-pop {
+    position: fixed; z-index: 100; width: min(560px, calc(100vw - 24px));
+    background: var(--card); border: 2px solid var(--usa-red); border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,32,91,.22); padding: 16px; text-align: left;
+    animation: fadeIn .18s ease;
+  }
+  .modality-pop .pop-title {
+    font-weight: 700; color: var(--usa-blue); font-size: 1.05rem; margin-bottom: 10px;
+  }
+
+  /* Results */
+  .results-title { text-align: center; margin-bottom: 4px; color: var(--usa-blue); font-size: 1.5rem; }
+  .results-sub { text-align: center; color: var(--muted); font-size: .92rem; margin-bottom: 22px; }
+  .result-item {
+    border: 2px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden;
+    background: #fff; animation: fadeIn .35s ease both;
+  }
+  .result-item.best { border-color: var(--usa-red); box-shadow: 0 3px 14px rgba(186,12,47,.12); }
+  .result-head {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer;
+    user-select: none;
+  }
+  .rank-badge {
+    flex: none; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--usa-blue); color: #fff; font-weight: 700; font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-item.best .rank-badge { background: var(--usa-red); }
+  .result-name-block { flex: 1; min-width: 0; }
+  .result-name { font-weight: 700; color: var(--usa-blue); font-size: 1.05rem; }
+  .best-tag {
+    display: inline-block; background: var(--usa-red); color: #fff; font-size: .68rem;
+    font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle;
+  }
+  .match-bar-track { height: 8px; background: var(--border); border-radius: 5px; margin-top: 6px; overflow: hidden; }
+  .match-bar { height: 100%; background: linear-gradient(90deg, var(--usa-blue), #3457a0); border-radius: 5px; width: 0; transition: width .8s ease; }
+  .result-item.best .match-bar { background: linear-gradient(90deg, var(--usa-red), #e04663); }
+  .match-pct { flex: none; font-weight: 700; color: var(--usa-blue); font-size: .95rem; width: 76px; text-align: right; }
+  .caret { flex: none; color: var(--muted); transition: transform .2s; font-size: .8rem; }
+  .result-item.open .caret { transform: rotate(180deg); }
+  .result-detail { display: none; padding: 0 16px 16px; }
+  .result-item.open .result-detail { display: block; }
+  .detail-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 4px; }
+  .detail-box { background: #f7f8fc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .detail-box .dl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--usa-red); margin-bottom: 3px; }
+  .detail-box .dv { font-size: .88rem; color: var(--text); line-height: 1.45; }
+  @media (min-width: 620px) { .detail-grid { grid-template-columns: 1fr 1fr; } .detail-grid .full { grid-column: 1 / -1; } }
+  .modality-pop .detail-grid { grid-template-columns: 1fr 1fr; }
+  .modality-pop .detail-grid .full { grid-column: 1 / -1; }
+  @media (max-width: 480px) { .modality-pop .detail-grid { grid-template-columns: 1fr; } }
+
+  .results-actions { text-align: center; margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .footnote { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 26px; line-height: 1.5; }
+  .footnote a { color: var(--usa-blue); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Modality Match Maker (M<sup>3</sup>)</h1>
+  <p>University of South Alabama &bull; Find the course format that sets you up for success</p>
+</div>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="card intro" id="introScreen">
+    <h2>Which course format is right for you?</h2>
+    <p>USA offers seven ways to take a course &mdash; from fully on-campus to fully online at your own pace. Answer <strong>7 quick questions</strong> about your schedule, learning style, and preferences, and we'll rank all seven modalities by how well they fit you.</p>
+    <div class="modality-chips" id="modalityChips"></div>
+    <p class="chip-hint">Hover over a format to see its details.</p>
+    <button class="btn btn-primary" onclick="startQuiz()">Start the Quiz</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="hidden" id="quizScreen">
+    <div class="progress-row">
+      <span class="progress-label" id="progressLabel">Question 1 of 7</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="card">
+      <div class="q-number" id="qNumber"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="q-help" id="qHelp"></div>
+      <div id="optionsBox"></div>
+      <div class="nav-row">
+        <button class="btn btn-back" id="backBtn" onclick="goBack()">&larr; Back</button>
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="hidden" id="resultsScreen">
+    <h2 class="results-title">Your Modality Matches</h2>
+    <p class="results-sub">Ranked from best fit to least fit, based on your answers. Click any format to see details.</p>
+    <div id="resultsList"></div>
+    <div class="results-actions">
+      <button class="btn btn-blue" onclick="restart()">Retake the Quiz</button>
+    </div>
+    <p class="footnote">
+      Online courses may have limited requirements for in-person or synchronous attendance for orientation, assessments, or assignments.<br>
+      Based on <em>Course Modalities at USA</em> &mdash; University of South Alabama, Innovation in Learning Center (June 2026).
+    </p>
+  </div>
+
+</div>
+
+<script>
+// ===== Modality data (from the USA ILC chart, June 2026) =====
+const MODALITIES = {
+  campusTraditional: {
+    name: "Campus Traditional",
+    definition: "Traditional 1:1 classroom experience with regularly scheduled meeting times on campus.",
+    location: "On campus",
+    meetings: "Regularly scheduled meeting times on campus",
+    onlineWork: "Occasionally",
+    example: "Every MWF from 8–8:50 AM (no reduction)"
+  },
+  campusHybrid: {
+    name: "Campus Hybrid",
+    definition: "Physical attendance required, but fewer days per week — reduces seat time up to 49%. USA defines hybrid as a reduction in synchronous class time.",
+    location: "On campus",
+    meetings: "Combination of regularly scheduled meeting times and online asynchronous coursework",
+    onlineWork: "At least 30% of learning activities are asynchronous online",
+    example: "MWF class meets 2× a week; TR class meets 1× a week"
+  },
+  integratedHybrid: {
+    name: "Integrated Hybrid",
+    definition: "Physical attendance required, but fewer times per semester — reduces seat time up to 85%. USA defines hybrid as a reduction in synchronous class time.",
+    location: "Scheduled rotation: campus and online (instructor dictated)",
+    meetings: "Combination of scheduled meeting times and online asynchronous coursework",
+    onlineWork: "At least 30% of learning activities are asynchronous online",
+    example: "Class meets 3× a semester — two in person and one remote, for 2 hours"
+  },
+  remoteScheduled: {
+    name: "Remote Scheduled",
+    definition: "100% remote, but all classes meet at a regularly scheduled time.",
+    location: "Online",
+    meetings: "Regularly scheduled meeting times — online",
+    onlineWork: "Occasionally",
+    example: "Every MWF from 8–8:50 AM via a web conferencing platform (no reduction)"
+  },
+  remoteHybrid: {
+    name: "Remote Hybrid",
+    definition: "100% remote, but fewer synchronous class meetings than Remote Scheduled. USA defines hybrid as a reduction in synchronous class time.",
+    location: "Online",
+    meetings: "Combination of regularly scheduled remote meeting times and online asynchronous coursework",
+    onlineWork: "At least 30% of learning activities are asynchronous online",
+    example: "M class meets 6× during the semester on Zoom (66% reduction)"
+  },
+  remoteIndependent: {
+    name: "Remote Independent",
+    definition: "No synchronous meetings — 100% self-paced within syllabus deadlines.",
+    location: "Online",
+    meetings: "No scheduled meeting times; all coursework is completed asynchronously",
+    onlineWork: "Always — 100% of learning activities are asynchronous online",
+    example: "No meeting times. All coursework is completed in Canvas"
+  },
+  multiAccess: {
+    name: "Multi-Access",
+    definition: "Instructor provides instruction within the classroom, but the student chooses to attend in-person, remote synchronous, or remote asynchronous. Academic programs may utilize any two or all three of the modalities.",
+    location: "On campus or online (student choice)",
+    meetings: "On campus or online at scheduled meeting times, or asynchronous (student choice)",
+    onlineWork: "All learning activities are planned to equally serve students who attend in any modality",
+    example: "Student choice to attend in-person, via Zoom, or asynchronously (some courses may offer only two of the three)"
+  }
+};
+const KEYS = ["campusTraditional","campusHybrid","integratedHybrid","remoteScheduled","remoteHybrid","remoteIndependent","multiAccess"];
+
+// ===== Questions & scoring =====
+// Each option adds points per modality:
+// [campusTraditional, campusHybrid, integratedHybrid, remoteScheduled, remoteHybrid, remoteIndependent, multiAccess]
+const QUESTIONS = [
+  {
+    text: "How well can your weekly schedule handle fixed class meeting times?",
+    help: "Think about work, family, athletics, or other commitments each semester.",
+    options: [
+      { title: "Easily — I can attend the same times every week", sub: "e.g., every MWF at 8 AM", pts: [3,2,1,3,2,0,2] },
+      { title: "Sometimes — I can make occasional scheduled meetings", sub: "A handful of set dates per semester works", pts: [0,3,3,0,3,1,2] },
+      { title: "Rarely — my schedule changes week to week", sub: "Shift work, caregiving, travel, etc.", pts: [0,0,1,0,1,3,3] },
+      { title: "Not at all — I need zero required meeting times", sub: "I must fit coursework around my life", pts: [0,0,0,0,0,3,1] }
+    ]
+  },
+  {
+    text: "How easy is it for you to get to the USA campus?",
+    help: "Consider distance, transportation, parking, and how often you could realistically come.",
+    options: [
+      { title: "Very easy — I'm on or near campus regularly", sub: "", pts: [3,3,2,1,1,0,3] },
+      { title: "Doable occasionally — a few trips a semester is fine", sub: "", pts: [1,3,3,1,2,1,2] },
+      { title: "Difficult — I live far away or can't commute", sub: "", pts: [0,0,0,3,3,3,1] }
+    ]
+  },
+  {
+    text: "Where do you learn best?",
+    help: "Be honest about the environment where you focus and engage the most.",
+    options: [
+      { title: "In a physical classroom, face-to-face", sub: "I engage most when I'm in the room", pts: [3,2,1,0,0,0,1] },
+      { title: "In live online classes (Zoom)", sub: "I like real-time classes but from anywhere", pts: [0,0,1,3,2,1,1] },
+      { title: "On my own, working through materials at my pace", sub: "Videos, readings, and assignments on my schedule", pts: [0,1,2,0,1,3,1] },
+      { title: "A mix — it depends on the week", sub: "I like being able to switch it up", pts: [1,2,2,1,2,1,3] }
+    ]
+  },
+  {
+    text: "How self-directed are you with independent online coursework?",
+    help: "Online-heavy formats require managing deadlines without regular in-person reminders.",
+    options: [
+      { title: "Very — I set my own pace and never miss deadlines", sub: "", pts: [1,2,3,1,2,3,3] },
+      { title: "Fairly — I do fine with some structure and check-ins", sub: "", pts: [2,3,2,2,3,1,2] },
+      { title: "Not very — I need regular class meetings to stay on track", sub: "", pts: [3,1,0,3,1,0,1] }
+    ]
+  },
+  {
+    text: "Do you have reliable technology for online learning?",
+    help: "A dependable computer, webcam, and high-speed internet where you study.",
+    options: [
+      { title: "Yes — reliable computer and internet", sub: "", pts: [1,2,3,3,3,3,3] },
+      { title: "Mostly — occasional connection or device issues", sub: "", pts: [2,2,1,1,1,1,2] },
+      { title: "No — my access is limited or unreliable", sub: "Campus formats keep tech requirements lowest", pts: [3,1,0,0,0,0,1] }
+    ]
+  },
+  {
+    text: "How important is live interaction with your instructor and classmates?",
+    help: "Real-time discussion, immediate questions, group energy.",
+    options: [
+      { title: "Essential — I want live interaction every week", sub: "", pts: [3,1,1,3,1,0,2] },
+      { title: "Helpful — some live sessions are enough", sub: "", pts: [1,3,3,1,3,1,3] },
+      { title: "Optional — discussion boards and email work for me", sub: "", pts: [0,1,2,0,1,3,1] }
+    ]
+  },
+  {
+    text: "If your week suddenly changed, what would you want your course to allow?",
+    help: "This gets at how much built-in flexibility you need.",
+    options: [
+      { title: "Nothing changes — I like a fixed routine I can count on", sub: "", pts: [3,1,0,3,1,0,0] },
+      { title: "Fewer required meetings so there's less to reschedule", sub: "", pts: [0,3,3,0,3,2,1] },
+      { title: "The choice to attend in person, on Zoom, or catch up later", sub: "", pts: [0,0,0,0,0,1,3] },
+      { title: "Total freedom — no meetings to miss in the first place", sub: "", pts: [0,0,1,0,0,3,1] }
+    ]
+  }
+];
+
+// ===== Shared detail card markup =====
+function detailGridHTML(m) {
+  return '<div class="detail-grid">' +
+    '<div class="detail-box"><div class="dl">Class Meetings</div><div class="dv">' + m.meetings + '</div></div>' +
+    '<div class="detail-box"><div class="dl">Location</div><div class="dv">' + m.location + '</div></div>' +
+    '<div class="detail-box"><div class="dl">Independent Online Work</div><div class="dv">' + m.onlineWork + '</div></div>' +
+    '<div class="detail-box"><div class="dl">Attendance Example</div><div class="dv">' + m.example + '</div></div>' +
+    '<div class="detail-box full"><div class="dl">About This Format</div><div class="dv">' + m.definition + '</div></div>' +
+  '</div>';
+}
+
+// ===== State =====
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+
+const $ = id => document.getElementById(id);
+
+// ===== Intro chips with hover popover =====
+const popover = document.createElement("div");
+popover.className = "modality-pop hidden";
+document.body.appendChild(popover);
+let popKey = null, hideTimer = null;
+
+function showPopover(chip, key) {
+  clearTimeout(hideTimer);
+  popKey = key;
+  const m = MODALITIES[key];
+  popover.innerHTML = '<div class="pop-title">' + m.name + '</div>' + detailGridHTML(m);
+  popover.classList.remove("hidden");
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c === chip));
+  // position: below chip, centered, clamped to viewport; flip above if needed
+  const r = chip.getBoundingClientRect();
+  const pw = popover.offsetWidth, ph = popover.offsetHeight;
+  let left = Math.min(Math.max(12, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 12);
+  let top = r.bottom + 10;
+  if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 10);
+  popover.style.left = left + "px";
+  popover.style.top = top + "px";
+}
+
+function hidePopover() {
+  hideTimer = setTimeout(() => {
+    popover.classList.add("hidden");
+    popKey = null;
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  }, 120);
+}
+
+popover.addEventListener("mouseenter", () => clearTimeout(hideTimer));
+popover.addEventListener("mouseleave", hidePopover);
+window.addEventListener("scroll", () => { popover.classList.add("hidden"); }, { passive: true });
+
+function buildChips() {
+  const box = $("modalityChips");
+  KEYS.forEach(key => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = MODALITIES[key].name;
+    chip.addEventListener("mouseenter", () => showPopover(chip, key));
+    chip.addEventListener("mouseleave", hidePopover);
+    // tap support for touch devices
+    chip.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (popKey === key && !popover.classList.contains("hidden")) { clearTimeout(hideTimer); popover.classList.add("hidden"); popKey = null; chip.classList.remove("active"); }
+      else showPopover(chip, key);
+    });
+    box.appendChild(chip);
+  });
+  document.addEventListener("click", (e) => {
+    if (!popover.contains(e.target)) { popover.classList.add("hidden"); popKey = null; document.querySelectorAll(".chip").forEach(c => c.classList.remove("active")); }
+  });
+}
+buildChips();
+
+function startQuiz() {
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  popover.classList.add("hidden");
+  $("introScreen").classList.add("hidden");
+  $("resultsScreen").classList.add("hidden");
+  $("quizScreen").classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  $("qNumber").textContent = "Question " + (current + 1);
+  $("qText").textContent = q.text;
+  $("qHelp").textContent = q.help;
+  $("progressLabel").textContent = "Question " + (current + 1) + " of " + QUESTIONS.length;
+  $("progressFill").style.width = ((current) / QUESTIONS.length * 100) + "%";
+
+  const box = $("optionsBox");
+  box.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.className = "opt" + (answers[current] === i ? " selected" : "");
+    b.innerHTML = '<span class="opt-title">' + opt.title + '</span>' +
+      (opt.sub ? '<span class="opt-sub">' + opt.sub + '</span>' : '');
+    b.onclick = () => selectOption(i);
+    box.appendChild(b);
+  });
+  $("backBtn").disabled = current === 0;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function selectOption(i) {
+  answers[current] = i;
+  // brief visual confirmation, then advance
+  renderQuestion();
+  setTimeout(() => {
+    if (current < QUESTIONS.length - 1) {
+      current++;
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  }, 220);
+}
+
+function goBack() {
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+function computeScores() {
+  const N = KEYS.length;
+  const totals = new Array(N).fill(0);
+  const maxTotals = new Array(N).fill(0);
+  QUESTIONS.forEach((q, qi) => {
+    // max possible per question per modality
+    for (let m = 0; m < N; m++) {
+      maxTotals[m] += Math.max(...q.options.map(o => o.pts[m]));
+    }
+    const a = answers[qi];
+    if (a !== null) {
+      for (let m = 0; m < N; m++) totals[m] += q.options[a].pts[m];
+    }
+  });
+  return KEYS.map((key, m) => ({
+    key,
+    score: totals[m],
+    pct: Math.round((totals[m] / maxTotals[m]) * 100)
+  })).sort((a, b) => b.pct - a.pct);
+}
+
+function showResults() {
+  $("quizScreen").classList.add("hidden");
+  $("resultsScreen").classList.remove("hidden");
+  const ranked = computeScores();
+  const list = $("resultsList");
+  list.innerHTML = "";
+
+  ranked.forEach((r, i) => {
+    const m = MODALITIES[r.key];
+    const item = document.createElement("div");
+    item.className = "result-item" + (i === 0 ? " best open" : "");
+    item.style.animationDelay = (i * 0.08) + "s";
+    item.innerHTML =
+      '<div class="result-head">' +
+        '<div class="rank-badge">' + (i + 1) + '</div>' +
+        '<div class="result-name-block">' +
+          '<span class="result-name">' + m.name + '</span>' +
+          (i === 0 ? '<span class="best-tag">Best Match</span>' : '') +
+          '<div class="match-bar-track"><div class="match-bar" data-pct="' + r.pct + '"></div></div>' +
+        '</div>' +
+        '<div class="match-pct">' + r.pct + '% fit</div>' +
+        '<div class="caret">▼</div>' +
+      '</div>' +
+      '<div class="result-detail">' + detailGridHTML(m) + '</div>';
+    item.querySelector(".result-head").onclick = () => item.classList.toggle("open");
+    list.appendChild(item);
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  // animate bars after paint
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll(".match-bar").forEach(bar => {
+        bar.style.width = bar.dataset.pct + "%";
+      });
+    }, 60);
+  });
+}
+
+function restart() { startQuiz(); }
+</script>
+</body>
+</html>
