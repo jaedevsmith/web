@@ -92,20 +92,6 @@
   .chip {
     background: #eef1f8; color: var(--usa-blue); font-size: .82rem; font-weight: 600;
     padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
-    cursor: pointer; transition: border-color .15s, background .15s;
-  }
-  .chip:hover, .chip.active { border-color: var(--usa-red); background: #fdf3f5; }
-  .chip-hint { font-size: .8rem; color: var(--muted); margin-top: -12px; margin-bottom: 18px; }
-
-  /* Modality hover popover */
-  .modality-pop {
-    position: fixed; z-index: 100; width: min(560px, calc(100vw - 24px));
-    background: var(--card); border: 2px solid var(--usa-red); border-radius: 14px;
-    box-shadow: 0 8px 30px rgba(0,32,91,.22); padding: 16px; text-align: left;
-    animation: fadeIn .18s ease;
-  }
-  .modality-pop .pop-title {
-    font-weight: 700; color: var(--usa-blue); font-size: 1.05rem; margin-bottom: 10px;
   }
 
   /* Results */
@@ -146,9 +132,6 @@
   .detail-box .dl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--usa-red); margin-bottom: 3px; }
   .detail-box .dv { font-size: .88rem; color: var(--text); line-height: 1.45; }
   @media (min-width: 620px) { .detail-grid { grid-template-columns: 1fr 1fr; } .detail-grid .full { grid-column: 1 / -1; } }
-  .modality-pop .detail-grid { grid-template-columns: 1fr 1fr; }
-  .modality-pop .detail-grid .full { grid-column: 1 / -1; }
-  @media (max-width: 480px) { .modality-pop .detail-grid { grid-template-columns: 1fr; } }
 
   .results-actions { text-align: center; margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .footnote { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 26px; line-height: 1.5; }
@@ -159,7 +142,7 @@
 <body>
 
 <div class="header">
-  <h1>Modality Match Maker (M<sup>3</sup>)</h1>
+  <h1>Modality Match Maker (M<sup>3</sup>sup>)</h1>
   <p>University of South Alabama &bull; Find the course format that sets you up for success</p>
 </div>
 
@@ -169,8 +152,15 @@
   <div class="card intro" id="introScreen">
     <h2>Which course format is right for you?</h2>
     <p>USA offers seven ways to take a course &mdash; from fully on-campus to fully online at your own pace. Answer <strong>7 quick questions</strong> about your schedule, learning style, and preferences, and we'll rank all seven modalities by how well they fit you.</p>
-    <div class="modality-chips" id="modalityChips"></div>
-    <p class="chip-hint">Hover over a format to see its details.</p>
+    <div class="modality-chips">
+      <span class="chip">Campus Traditional</span>
+      <span class="chip">Campus Hybrid</span>
+      <span class="chip">Integrated Hybrid</span>
+      <span class="chip">Remote Scheduled</span>
+      <span class="chip">Remote Hybrid</span>
+      <span class="chip">Remote Independent</span>
+      <span class="chip">Multi-Access</span>
+    </div>
     <button class="btn btn-primary" onclick="startQuiz()">Start the Quiz</button>
   </div>
 
@@ -342,84 +332,15 @@ const QUESTIONS = [
   }
 ];
 
-// ===== Shared detail card markup =====
-function detailGridHTML(m) {
-  return '<div class="detail-grid">' +
-    '<div class="detail-box"><div class="dl">Class Meetings</div><div class="dv">' + m.meetings + '</div></div>' +
-    '<div class="detail-box"><div class="dl">Location</div><div class="dv">' + m.location + '</div></div>' +
-    '<div class="detail-box"><div class="dl">Independent Online Work</div><div class="dv">' + m.onlineWork + '</div></div>' +
-    '<div class="detail-box"><div class="dl">Attendance Example</div><div class="dv">' + m.example + '</div></div>' +
-    '<div class="detail-box full"><div class="dl">About This Format</div><div class="dv">' + m.definition + '</div></div>' +
-  '</div>';
-}
-
 // ===== State =====
 let current = 0;
 let answers = new Array(QUESTIONS.length).fill(null);
 
 const $ = id => document.getElementById(id);
 
-// ===== Intro chips with hover popover =====
-const popover = document.createElement("div");
-popover.className = "modality-pop hidden";
-document.body.appendChild(popover);
-let popKey = null, hideTimer = null;
-
-function showPopover(chip, key) {
-  clearTimeout(hideTimer);
-  popKey = key;
-  const m = MODALITIES[key];
-  popover.innerHTML = '<div class="pop-title">' + m.name + '</div>' + detailGridHTML(m);
-  popover.classList.remove("hidden");
-  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c === chip));
-  // position: below chip, centered, clamped to viewport; flip above if needed
-  const r = chip.getBoundingClientRect();
-  const pw = popover.offsetWidth, ph = popover.offsetHeight;
-  let left = Math.min(Math.max(12, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 12);
-  let top = r.bottom + 10;
-  if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 10);
-  popover.style.left = left + "px";
-  popover.style.top = top + "px";
-}
-
-function hidePopover() {
-  hideTimer = setTimeout(() => {
-    popover.classList.add("hidden");
-    popKey = null;
-    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-  }, 120);
-}
-
-popover.addEventListener("mouseenter", () => clearTimeout(hideTimer));
-popover.addEventListener("mouseleave", hidePopover);
-window.addEventListener("scroll", () => { popover.classList.add("hidden"); }, { passive: true });
-
-function buildChips() {
-  const box = $("modalityChips");
-  KEYS.forEach(key => {
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.textContent = MODALITIES[key].name;
-    chip.addEventListener("mouseenter", () => showPopover(chip, key));
-    chip.addEventListener("mouseleave", hidePopover);
-    // tap support for touch devices
-    chip.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (popKey === key && !popover.classList.contains("hidden")) { clearTimeout(hideTimer); popover.classList.add("hidden"); popKey = null; chip.classList.remove("active"); }
-      else showPopover(chip, key);
-    });
-    box.appendChild(chip);
-  });
-  document.addEventListener("click", (e) => {
-    if (!popover.contains(e.target)) { popover.classList.add("hidden"); popKey = null; document.querySelectorAll(".chip").forEach(c => c.classList.remove("active")); }
-  });
-}
-buildChips();
-
 function startQuiz() {
   current = 0;
   answers = new Array(QUESTIONS.length).fill(null);
-  popover.classList.add("hidden");
   $("introScreen").classList.add("hidden");
   $("resultsScreen").classList.add("hidden");
   $("quizScreen").classList.remove("hidden");
@@ -510,7 +431,13 @@ function showResults() {
         '<div class="match-pct">' + r.pct + '% fit</div>' +
         '<div class="caret">▼</div>' +
       '</div>' +
-      '<div class="result-detail">' + detailGridHTML(m) + '</div>';
+      '<div class="result-detail"><div class="detail-grid">' +
+        '<div class="detail-box"><div class="dl">Class Meetings</div><div class="dv">' + m.meetings + '</div></div>' +
+        '<div class="detail-box"><div class="dl">Location</div><div class="dv">' + m.location + '</div></div>' +
+        '<div class="detail-box"><div class="dl">Independent Online Work</div><div class="dv">' + m.onlineWork + '</div></div>' +
+        '<div class="detail-box"><div class="dl">Attendance Example</div><div class="dv">' + m.example + '</div></div>' +
+        '<div class="detail-box full"><div class="dl">About This Format</div><div class="dv">' + m.definition + '</div></div>' +
+      '</div></div>';
     item.querySelector(".result-head").onclick = () => item.classList.toggle("open");
     list.appendChild(item);
   });
