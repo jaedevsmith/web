@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modality Match Maker  |  University of South Alabama</title>
+<title>Course Modality Picker | University of South Alabama</title>
 <style>
   :root {
     --usa-blue: #00205B;
@@ -159,9 +159,8 @@
 <body>
 
 <div class="header">
-
-  <h1>Modality Match Maker (M<sup>3</sup>)</h1>
-  <p>University of South Alabama &bull; Find the course format that sets you up for success</p>
+  <h1>Course Modality Picker</h1>
+  <p>University of South Alabama &bull; Find the course format that fits how you learn</p>
 </div>
 
 <div class="wrap">
@@ -171,7 +170,7 @@
     <h2>Which course format is right for you?</h2>
     <p>USA offers seven ways to take a course &mdash; from fully on-campus to fully online at your own pace. Answer <strong>7 quick questions</strong> about your schedule, learning style, and preferences, and we'll rank all seven modalities by how well they fit you.</p>
     <div class="modality-chips" id="modalityChips"></div>
-    <p class="chip-hint">Hover over a format to see its details.</p>
+    <p class="chip-hint">Click a format to see its details.</p>
     <button class="btn btn-primary" onclick="startQuiz()">Start the Quiz</button>
   </div>
 
@@ -218,7 +217,8 @@ const MODALITIES = {
     location: "On campus",
     meetings: "Regularly scheduled meeting times on campus",
     onlineWork: "Occasionally",
-    example: "Every MWF from 8–8:50 AM (no reduction)"
+    example: "Every MWF from 8–8:50 AM (no reduction)",
+    target: "Students who thrive in structured, traditional classroom settings, with face-to-face student and instructor interactions, have regular schedules that accommodate fixed meeting times, and have easy access to campus."
   },
   campusHybrid: {
     name: "Campus Hybrid",
@@ -226,7 +226,8 @@ const MODALITIES = {
     location: "On campus",
     meetings: "Combination of regularly scheduled meeting times and online asynchronous coursework",
     onlineWork: "At least 30% of learning activities are asynchronous online",
-    example: "MWF class meets 2× a week; TR class meets 1× a week"
+    example: "MWF class meets 2× a week; TR class meets 1× a week",
+    target: "Students who desire a structured, traditional classroom setting with student and instructor face-to-face interactions, but are also self-directed to complete online work, have regular schedules that accommodate occasional fixed meeting times, and easy access to campus."
   },
   integratedHybrid: {
     name: "Integrated Hybrid",
@@ -234,7 +235,8 @@ const MODALITIES = {
     location: "Scheduled rotation: campus and online (instructor dictated)",
     meetings: "Combination of scheduled meeting times and online asynchronous coursework",
     onlineWork: "At least 30% of learning activities are asynchronous online",
-    example: "Class meets 3× a semester — two in person and one remote, for 2 hours"
+    example: "Class meets 3× a semester — two in person and one remote, for 2 hours",
+    target: "Students who desire occasional face-to-face interactions with their instructor and classmates, but are self-directed to complete most coursework online, have schedules that accommodate a few fixed meeting times per semester, and can travel to campus when required."
   },
   remoteScheduled: {
     name: "Remote Scheduled",
@@ -242,7 +244,8 @@ const MODALITIES = {
     location: "Online",
     meetings: "Regularly scheduled meeting times — online",
     onlineWork: "Occasionally",
-    example: "Every MWF from 8–8:50 AM via a web conferencing platform (no reduction)"
+    example: "Every MWF from 8–8:50 AM via a web conferencing platform (no reduction)",
+    target: "Students who have regular schedules that accommodate fixed meeting times online, have access to reliable technology, are comfortable in online learning environments, but desire online interactions with instructor and students, and are self-directed to complete online work."
   },
   remoteHybrid: {
     name: "Remote Hybrid",
@@ -250,7 +253,8 @@ const MODALITIES = {
     location: "Online",
     meetings: "Combination of regularly scheduled remote meeting times and online asynchronous coursework",
     onlineWork: "At least 30% of learning activities are asynchronous online",
-    example: "M class meets 6× during the semester on Zoom (66% reduction)"
+    example: "M class meets 6× during the semester on Zoom (66% reduction)",
+    target: "Students who are comfortable in online learning environments, have access to reliable technology, and have schedules that accommodate occasional meeting times online."
   },
   remoteIndependent: {
     name: "Remote Independent",
@@ -258,7 +262,8 @@ const MODALITIES = {
     location: "Online",
     meetings: "No scheduled meeting times; all coursework is completed asynchronously",
     onlineWork: "Always — 100% of learning activities are asynchronous online",
-    example: "No meeting times. All coursework is completed in Canvas"
+    example: "No meeting times. All coursework is completed in Canvas",
+    target: "Students who are comfortable in online learning environments, have schedules that do not accommodate fixed meeting times, and have access to reliable technology. Best suited for self-directed learners that need schedule flexibility or prefer to learn at their own pace."
   },
   multiAccess: {
     name: "Multi-Access",
@@ -266,7 +271,8 @@ const MODALITIES = {
     location: "On campus or online (student choice)",
     meetings: "On campus or online at scheduled meeting times, or asynchronous (student choice)",
     onlineWork: "All learning activities are planned to equally serve students who attend in any modality",
-    example: "Student choice to attend in-person, via Zoom, or asynchronously (some courses may offer only two of the three)"
+    example: "Student choice to attend in-person, via Zoom, or asynchronously (some courses may offer only two of the three)",
+    target: "Students who need the flexibility to attend class meetings either in-person, online, or work asynchronously; have access to reliable technology, are comfortable with in-person or online environments, and are self-directed to complete online work."
   }
 };
 const KEYS = ["campusTraditional","campusHybrid","integratedHybrid","remoteScheduled","remoteHybrid","remoteIndependent","multiAccess"];
@@ -351,6 +357,7 @@ function detailGridHTML(m) {
     '<div class="detail-box"><div class="dl">Independent Online Work</div><div class="dv">' + m.onlineWork + '</div></div>' +
     '<div class="detail-box"><div class="dl">Attendance Example</div><div class="dv">' + m.example + '</div></div>' +
     '<div class="detail-box full"><div class="dl">About This Format</div><div class="dv">' + m.definition + '</div></div>' +
+    '<div class="detail-box full"><div class="dl">Target Student</div><div class="dv">' + m.target + '</div></div>' +
   '</div>';
 }
 
@@ -391,8 +398,6 @@ function hidePopover() {
   }, 120);
 }
 
-popover.addEventListener("mouseenter", () => clearTimeout(hideTimer));
-popover.addEventListener("mouseleave", hidePopover);
 window.addEventListener("scroll", () => { popover.classList.add("hidden"); }, { passive: true });
 
 function buildChips() {
@@ -401,9 +406,6 @@ function buildChips() {
     const chip = document.createElement("span");
     chip.className = "chip";
     chip.textContent = MODALITIES[key].name;
-    chip.addEventListener("mouseenter", () => showPopover(chip, key));
-    chip.addEventListener("mouseleave", hidePopover);
-    // tap support for touch devices
     chip.addEventListener("click", (e) => {
       e.stopPropagation();
       if (popKey === key && !popover.classList.contains("hidden")) { clearTimeout(hideTimer); popover.classList.add("hidden"); popKey = null; chip.classList.remove("active"); }
