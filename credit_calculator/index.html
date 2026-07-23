@@ -1,621 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Credit Hours Calculator</title>
-    <style>
-      body { 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        background-color: #f0f2f5; 
-        padding: 40px 20px; 
-        color: #333;
-      }
-      .calculator-container {
-        max-width: 950px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      }
-      h2 { text-align: center; color: #1a73e8; margin-top: 0; }
-      .header-controls { display: flex; gap: 20px; margin-bottom: 25px; background: #e8f0fe; padding: 15px; border-radius: 8px;}
-      .control-group { flex: 1; }
-      label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #555;}
-      select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;}
-      
-      .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-      .category-card { background: #fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; display: none; }
-      .category-card.active { display: block; }
-      .category-card h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #1a73e8; padding-bottom: 5px; color: #1a73e8; display: flex; align-items: center; justify-content: space-between;}
-      
-      .input-group { margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
-      .input-group label { font-weight: normal; font-size: 13px; width: 65%; margin-bottom: 0; display: flex; align-items: center;}
-      .input-group input { width: 30%; padding: 6px;}
-      
-      /* Tooltip Styles */
-      .tooltip-container {
-        display: inline-block;
-        position: relative;
-        cursor: help;
-        color: #1a73e8;
-        margin-left: 6px;
-        font-size: 14px;
-        font-weight: bold;
-      }
-      .tooltip-text {
-        visibility: hidden;
-        width: 230px;
-        background-color: #333;
-        color: #fff;
-        text-align: left;
-        border-radius: 6px;
-        padding: 8px 10px;
-        position: absolute;
-        z-index: 100;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        opacity: 0;
-        transition: opacity 0.2s, visibility 0.2s;
-        font-size: 11px;
-        line-height: 1.4;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        font-weight: normal;
-      }
-      .tooltip-container:hover .tooltip-text {
-        visibility: visible;
-        opacity: 1;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Modality Picker | University of South Alabama</title>
+<style>
+  :root {
+    --usa-blue: #00205B;
+    --usa-red: #BA0C2F;
+    --usa-red-dark: #8f0a24;
+    --bg: #f4f5f9;
+    --card: #ffffff;
+    --text: #1a2233;
+    --muted: #5b6478;
+    --border: #e2e5ee;
+    --gold: #f0b323;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--usa-blue);
+    color: #fff;
+    padding: 28px 20px 24px;
+    text-align: center;
+    border-bottom: 5px solid var(--usa-red);
+  }
+  .header h1 { font-size: 1.7rem; letter-spacing: .3px; }
+  .header p { margin-top: 6px; font-size: .95rem; opacity: .85; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 24px 16px 60px; }
 
-      /* Policy Floors & Totals Board */
-      .policy-floor-box {
-        margin-top: 25px;
-        padding: 15px;
-        background: #fff3cd;
-        border: 1px solid #ffeeba;
-        border-left: 5px solid #ffc107;
-        border-radius: 6px;
-        display: none;
-        font-size: 14px;
-      }
-      .policy-floor-box.active { display: block; }
-      .floor-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 6px 10px; background: rgba(255,255,255,0.7); border-radius: 4px; }
-      .floor-row:last-child { margin-bottom: 0; }
-      
-      .totals-board { margin-top: 20px; padding: 20px; background: #fff; border: 2px solid #1a73e8; border-radius: 8px; text-align: center;}
-      .total-row { font-size: 18px; margin: 10px 0; font-weight: bold;}
-      .status { font-size: 14px; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-left: 10px;}
-      .status.pass { background-color: #d4edda; color: #155724; }
-      .status.fail { background-color: #f8d7da; color: #721c24; }
-      .status.warn { background-color: #fff3cd; color: #856404; }
+  /* Progress */
+  .progress-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+  }
+  .progress-label { font-size: .85rem; font-weight: 600; color: var(--usa-blue); white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 10px; background: var(--border); border-radius: 6px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, var(--usa-red), var(--usa-red-dark));
+    border-radius: 6px; transition: width .35s ease;
+  }
 
-      .reset-link {
-        font-size: 12px;
-        color: #1a73e8;
-        cursor: pointer;
-        text-decoration: underline;
-        display: inline-block;
-        margin-top: 5px;
-      }
-      .reset-link:hover { color: #0b53c1; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px; box-shadow: 0 2px 10px rgba(0,32,91,.06);
+    animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-      /* Modality Description Box Styles */
-      .modality-info-box {
-        background-color: #f8f9fa;
-        border-left: 5px solid #1a73e8;
-        padding: 20px;
-        margin-top: 25px;
-        margin-bottom: 20px;
-        border-radius: 0 8px 8px 0;
-        display: none; 
-        text-align: left;
-      }
-      .modality-info-box.active { display: block; }
-      .modality-info-box h4 { margin-top: 0; color: #1a73e8; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-      .info-section { margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
-      .info-section strong { color: #333; display: block; margin-bottom: 2px; }
-      
-      /* Export Button Styles */
-      .action-row { text-align: center; margin-top: 20px; }
-      #exportBtn {
-        background-color: #0f9d58; color: white; border: none; padding: 12px 24px;
-        font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background-color 0.3s;
-      }
-      #exportBtn:hover { background-color: #0b8043; }
-      #exportBtn:disabled { background-color: #999; cursor: not-allowed; }
-      #exportMsg { display: block; margin-top: 10px; font-size: 14px; font-weight: bold; }
-    </style>
-  </head>
-  <body>
+  .q-number { font-size: .8rem; font-weight: 700; color: var(--usa-red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .q-text { font-size: 1.25rem; font-weight: 700; color: var(--usa-blue); margin-bottom: 6px; }
+  .q-help { font-size: .92rem; color: var(--muted); margin-bottom: 18px; }
 
-    <div class="calculator-container">
-      <h2>Interactive Credit Hours Calculator</h2>
-      
-      <div class="header-controls">
-        <div class="control-group">
-          <label>Course Modality:</label>
-          <select id="modalitySelect" onchange="onModalityChange()">
-            <option value="" disabled selected>Select a modality...</option>
-            <option value="campusTraditional">Campus Traditional</option>
-            <option value="campusHybrid">Campus Hybrid</option>
-            <option value="multiAccess">Multi-Access</option>
-            <option value="remoteScheduled">Remote Scheduled</option>
-            <option value="remoteHybrid">Remote Hybrid</option>
-            <option value="remoteIndependent">Remote Independent</option>
-            <option value="integratedHybrid">Integrated Hybrid</option>
-          </select>
-        </div>
-        <div class="control-group">
-          <label>Target Credits:</label>
-          <select id="creditsSelect" onchange="onCreditsChange()">
-            <option value="1">1 Credit (15 Inst / 30 Ind)</option>
-            <option value="2">2 Credits (30 Inst / 60 Ind)</option>
-            <option value="3" selected>3 Credits (45 Inst / 90 Ind)</option>
-            <option value="4">4 Credits (60 Inst / 120 Ind)</option>
-          </select>
-        </div>
-      </div>
+  .opt {
+    display: block; width: 100%; text-align: left;
+    background: #fff; border: 2px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+    font-size: 1rem; color: var(--text); font-family: inherit;
+    transition: border-color .15s, background .15s, transform .1s;
+  }
+  .opt:hover { border-color: var(--usa-blue); background: #f7f9ff; }
+  .opt:active { transform: scale(.99); }
+  .opt.selected { border-color: var(--usa-red); background: #fdf3f5; }
+  .opt .opt-title { font-weight: 600; }
+  .opt .opt-sub { display: block; font-size: .85rem; color: var(--muted); margin-top: 2px; }
 
-      <!-- Categories Container -->
-      <div class="category-grid">
-        
-        <!-- IN PERSON ACTIVITIES (No Independent Learning) -->
-        <div id="card-inPerson" class="category-card">
-          <h3>In-Person Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities conducted physically face-to-face in a shared campus classroom or facility.</span></span></h3>
-          <div class="input-group">
-            <label>Direct Instruction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live lectures, presentations, demonstrations, or direct dissemination of content by the instructor.</span></span></label>
-            <input type="number" class="calc-input inst-input" id="inPersonDirect" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
-          </div>
-          <div class="input-group">
-            <label>Guided Interaction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Instructor-facilitated group work, discussions, active problem-solving, or tutorials.</span></span></label>
-            <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
-          </div>
-          <div class="input-group">
-            <label>Formative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Low-stakes quizzes, draft reviews, peer feedback, or checkpoints used to monitor student learning.</span></span></label>
-            <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
-          </div>
-          <div class="input-group">
-            <label>Summative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Exams, final project presentations, major evaluations, or culminating demonstrations of competency.</span></span></label>
-            <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
-          </div>
-        </div>
+  .nav-row { display: flex; justify-content: space-between; margin-top: 18px; }
+  .btn {
+    font-family: inherit; font-size: .95rem; font-weight: 600; cursor: pointer;
+    border-radius: 8px; padding: 10px 22px; border: none; transition: background .15s;
+  }
+  .btn-back { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-back:hover { background: var(--border); }
+  .btn-back:disabled { opacity: .4; cursor: default; }
+  .btn-primary { background: var(--usa-red); color: #fff; }
+  .btn-primary:hover { background: var(--usa-red-dark); }
+  .btn-blue { background: var(--usa-blue); color: #fff; }
+  .btn-blue:hover { background: #001743; }
 
-        <!-- SYNCHRONOUS DISTANCE ACTIVITIES (No Independent Learning) -->
-        <div id="card-syncDist" class="category-card">
-          <h3>Sync Distance Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live web-conferencing or remote sessions where instructor and students meet online at a scheduled time.</span></span></h3>
-          <div class="input-group">
-            <label>Direct Instruction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live remote lectures, web-conferencing presentations, or real-time online content delivery.</span></span></label>
-            <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <div class="input-group">
-            <label>Guided Interaction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live online breakout rooms, synchronous chat discussions, or instructor-guided remote exercises.</span></span></label>
-            <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <div class="input-group">
-            <label>Formative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Synchronous online quizzes, live polling, or real-time check-ins during virtual class.</span></span></label>
-            <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <div class="input-group">
-            <label>Summative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Proctored online exams, synchronous virtual presentations, or scheduled oral evaluations.</span></span></label>
-            <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-        </div>
+  /* Intro */
+  .intro { text-align: center; }
+  .intro h2 { color: var(--usa-blue); font-size: 1.5rem; margin-bottom: 12px; }
+  .intro p { color: var(--muted); margin-bottom: 10px; line-height: 1.55; }
+  .modality-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 22px; }
+  .chip {
+    background: #eef1f8; color: var(--usa-blue); font-size: .82rem; font-weight: 600;
+    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .chip:hover, .chip.active { border-color: var(--usa-red); background: #fdf3f5; }
+  .chip-hint { font-size: .8rem; color: var(--muted); margin-top: -12px; margin-bottom: 18px; }
 
-        <!-- ASYNCHRONOUS DISTANCE ACTIVITIES (Includes Independent Learning) -->
-        <div id="card-asyncDist" class="category-card">
-          <h3>Async Distance Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Online instructional activities completed flexibly within timeframes without scheduled real-time meetings.</span></span></h3>
-          <div class="input-group async-inst-group">
-            <label>Direct Instruction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Recorded lecture videos, interactive modules, or instructor-authored digital presentations.</span></span></label>
-            <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <div class="input-group async-inst-group">
-            <label>Guided Interaction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Asynchronous discussion forums, peer-review workshops, or collaborative document editing.</span></span></label>
-            <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <div class="input-group async-inst-group">
-            <label>Formative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Asynchronous practice quizzes, self-assessments, or draft submissions with feedback.</span></span></label>
-            <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <div class="input-group async-inst-group">
-            <label>Summative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Final project submissions, asynchronous exam windows, or portfolio evaluations.</span></span></label>
-            <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
-          </div>
-          <!-- Independent Learning Row (The ONLY location for out-of-class study across all modalities) -->
-          <div class="input-group" id="generalIndRow" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
-            <label><strong>Independent Learning</strong> <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Out-of-class student effort including reading, homework, studying, and preparation.</span></span></label>
-            <input type="number" class="calc-input ind-input" id="generalIndInput" min="0" value="0" oninput="onInputChange()">
-          </div>
-        </div>
+  /* Modality hover popover */
+  .modality-pop {
+    position: fixed; z-index: 100; width: min(560px, calc(100vw - 24px));
+    background: var(--card); border: 2px solid var(--usa-red); border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,32,91,.22); padding: 16px; text-align: left;
+    animation: fadeIn .18s ease;
+  }
+  .modality-pop .pop-title {
+    font-weight: 700; color: var(--usa-blue); font-size: 1.05rem; margin-bottom: 10px;
+  }
 
-      </div>
+  /* Results */
+  .results-title { text-align: center; margin-bottom: 4px; color: var(--usa-blue); font-size: 1.5rem; }
+  .results-sub { text-align: center; color: var(--muted); font-size: .92rem; margin-bottom: 22px; }
+  .result-item {
+    border: 2px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden;
+    background: #fff; animation: fadeIn .35s ease both;
+  }
+  .result-item.best { border-color: var(--usa-red); box-shadow: 0 3px 14px rgba(186,12,47,.12); }
+  .result-head {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer;
+    user-select: none;
+  }
+  .rank-badge {
+    flex: none; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--usa-blue); color: #fff; font-weight: 700; font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-item.best .rank-badge { background: var(--usa-red); }
+  .result-name-block { flex: 1; min-width: 0; }
+  .result-name { font-weight: 700; color: var(--usa-blue); font-size: 1.05rem; }
+  .best-tag {
+    display: inline-block; background: var(--usa-red); color: #fff; font-size: .68rem;
+    font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle;
+  }
+  .match-bar-track { height: 8px; background: var(--border); border-radius: 5px; margin-top: 6px; overflow: hidden; }
+  .match-bar { height: 100%; background: linear-gradient(90deg, var(--usa-blue), #3457a0); border-radius: 5px; width: 0; transition: width .8s ease; }
+  .result-item.best .match-bar { background: linear-gradient(90deg, var(--usa-red), #e04663); }
+  .match-pct { flex: none; font-weight: 700; color: var(--usa-blue); font-size: .95rem; width: 76px; text-align: right; }
+  .caret { flex: none; color: var(--muted); transition: transform .2s; font-size: .8rem; }
+  .result-item.open .caret { transform: rotate(180deg); }
+  .result-detail { display: none; padding: 0 16px 16px; }
+  .result-item.open .result-detail { display: block; }
+  .detail-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 4px; }
+  .detail-box { background: #f7f8fc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .detail-box .dl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--usa-red); margin-bottom: 3px; }
+  .detail-box .dv { font-size: .88rem; color: var(--text); line-height: 1.45; }
+  @media (min-width: 620px) { .detail-grid { grid-template-columns: 1fr 1fr; } .detail-grid .full { grid-column: 1 / -1; } }
+  .modality-pop .detail-grid { grid-template-columns: 1fr 1fr; }
+  .modality-pop .detail-grid .full { grid-column: 1 / -1; }
+  @media (max-width: 480px) { .modality-pop .detail-grid { grid-template-columns: 1fr; } }
 
-      <!-- Policy Floor Indicator Box -->
-      <div id="policyFloorBox" class="policy-floor-box">
-        <div id="floorContent"></div>
-      </div>
+  .results-actions { text-align: center; margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .footnote { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 26px; line-height: 1.5; }
+  .footnote a { color: var(--usa-blue); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
 
-      <div class="totals-board">
-        <div class="total-row">
-          Instructional Total (A): <span id="totalInst">0</span> hours
-          <span id="statusInst" class="status fail">Target not met</span>
-        </div>
-        <div class="total-row">
-          Independent Total (B): <span id="totalInd">0</span> hours
-          <span id="statusInd" class="status fail">Target not met</span>
-        </div>
-        <div>
-          <span class="reset-link" onclick="applyDefaultIndependent(true)">⚡ Reset Independent Hours to Credit Default (<span id="defaultIndText">90</span> hrs)</span>
-        </div>
-      </div>
+<div class="header">
+  <h1>Course Modality Picker</h1>
+  <p>University of South Alabama &bull; Find the course format that fits how you learn</p>
+</div>
 
-      <!-- Modality Info Box -->
-      <div id="modalityInfoBox" class="modality-info-box">
-        <h4 id="infoTitle">Modality Overview</h4>
-        <div class="info-section"><strong>Required Section Numbers:</strong> <span id="infoSections"></span></div>
-        <div class="info-section"><strong>Schedule Types:</strong> <span id="infoSchedule"></span></div>
-        <div class="info-section"><strong>Instructor Responsibilities:</strong> <span id="infoResponsibilities"></span></div>
-      </div>
+<div class="wrap">
 
-      <!-- Export Button Area -->
-      <div class="action-row">
-        <button id="exportBtn" onclick="exportData()">Download CSV Export</button>
-        <span id="exportMsg"></span>
-      </div>
+  <!-- INTRO -->
+  <div class="card intro" id="introScreen">
+    <h2>Which course format is right for you?</h2>
+    <p>USA offers seven ways to take a course &mdash; from fully on-campus to fully online at your own pace. Answer <strong>7 quick questions</strong> about your schedule, learning style, and preferences, and we'll rank all seven modalities by how well they fit you.</p>
+    <div class="modality-chips" id="modalityChips"></div>
+    <p class="chip-hint">Click a format to see its details.</p>
+    <button class="btn btn-primary" onclick="startQuiz()">Start the Quiz</button>
+  </div>
 
+  <!-- QUIZ -->
+  <div class="hidden" id="quizScreen">
+    <div class="progress-row">
+      <span class="progress-label" id="progressLabel">Question 1 of 7</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     </div>
+    <div class="card">
+      <div class="q-number" id="qNumber"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="q-help" id="qHelp"></div>
+      <div id="optionsBox"></div>
+      <div class="nav-row">
+        <button class="btn btn-back" id="backBtn" onclick="goBack()">&larr; Back</button>
+        <span></span>
+      </div>
+    </div>
+  </div>
 
-    <script>
-      const modalityDetails = {
-        'campusTraditional': {
-          sectionNumbers: "101-199 Day meeting time<br>501-599 Evening meeting time<br>901-999 Weekend meeting time",
-          scheduleTypes: "Lecture No Web (L) current, Lecture w/ web (LE) proposed",
-          responsibilities: "Conduct all class sessions in accordance with the needs of this course format and facilitate student engagement through interactive discussions and activities."
-        },
-        'campusHybrid': {
-          sectionNumbers: "701-799",
-          scheduleTypes: "No current schedule type, Lecture Blended (LB) proposed",
-          responsibilities: "Conduct all class sessions in accordance with the needs of this course format and facilitate student engagement through interactive discussions and activities maximizing the in-person contact time. (Requires minimum 51% in-person instruction)."
-        },
-        'integratedHybrid': {
-          sectionNumbers: "701-799",
-          scheduleTypes: "N/A",
-          responsibilities: "Conduct all class sessions in accordance with the needs of this course format and facilitate student engagement through interactive discussions and activities using web-conferencing features (polls, breakout rooms, etc.). Clearly indicate expected schedule rotation on syllabus. (Requires minimum 15% in-person instruction and 30% async remote instruction)."
-        },
-        'remoteScheduled': {
-          sectionNumbers: "801-899",
-          scheduleTypes: "Web (W) current, Lecture Web (LW) proposed",
-          responsibilities: "Conduct all class sessions in accordance with the needs of this course format and facilitate student engagement through interactive discussions and activities using web-conferencing features (polls, breakout rooms, etc.). (Requires 100% of instructional hours to be Synchronous Distance)."
-        },
-        'remoteHybrid': {
-          sectionNumbers: "701-799",
-          scheduleTypes: "No current schedule type, Lecture Blended (LB) proposed",
-          responsibilities: "Conduct all class sessions in accordance with the needs of this course format and facilitate student engagement through interactive discussions and activities using web-conferencing features (polls, breakout rooms, etc.). (Requires minimum 30% async instruction)."
-        },
-        'remoteIndependent': {
-          sectionNumbers: "801-899",
-          scheduleTypes: "Web (W) current",
-          responsibilities: "Design and deliver a well-structured online course with clear instructions, modules, and deadlines."
-        },
-        'multiAccess': {
-          sectionNumbers: "201-249 (Required synchronous classes) <strong style='color:#d93025;'>Note: Sections 201-249 must have a minimum of 15 hours of synchronous instruction per credit hour.</strong><br>250-299 (No required synchronous classes)",
-          scheduleTypes: "Lecture HyFlex (LF) current",
-          responsibilities: "Develop a course structure that supports all modalities in use for this course, i.e. in-person, synchronous online, and asynchronous online."
-        }
-      };
+  <!-- RESULTS -->
+  <div class="hidden" id="resultsScreen">
+    <h2 class="results-title">Your Modality Matches</h2>
+    <p class="results-sub">Ranked from best fit to least fit, based on your answers. Click any format to see details.</p>
+    <div id="resultsList"></div>
+    <div class="results-actions">
+      <button class="btn btn-blue" onclick="restart()">Retake the Quiz</button>
+    </div>
+    <p class="footnote">
+      Online courses may have limited requirements for in-person or synchronous attendance for orientation, assessments, or assignments.<br>
+      Based on <em>Course Modalities at USA</em> &mdash; University of South Alabama, Innovation in Learning Center (June 2026).
+    </p>
+  </div>
 
-      // Standard mapping: Every hybrid now uses consistent boxes & options
-      const modalityMapping = {
-        'campusTraditional': ['inPerson', 'asyncDist'],
-        'campusHybrid': ['inPerson', 'asyncDist'], 
-        'multiAccess': ['inPerson', 'syncDist', 'asyncDist'],
-        'remoteScheduled': ['syncDist', 'asyncDist'],
-        'remoteHybrid': ['syncDist', 'asyncDist'], 
-        'remoteIndependent': ['asyncDist'],
-        'integratedHybrid': ['inPerson', 'syncDist', 'asyncDist']
-      };
+</div>
 
-      function onModalityChange() {
-        updateView();
-        applyDefaultIndependent(false);
-        enforceFloorLocks();
-        calculateTotals();
-      }
+<script>
+// ===== Modality data (from the USA ILC chart, June 2026) =====
+const MODALITIES = {
+  campusTraditional: {
+    name: "Campus Traditional",
+    definition: "Traditional 1:1 classroom experience with regularly scheduled meeting times on campus.",
+    location: "On campus",
+    meetings: "Regularly scheduled meeting times on campus",
+    onlineWork: "Occasionally",
+    example: "Every MWF from 8–8:50 AM (no reduction)",
+    target: "Students who thrive in structured, traditional classroom settings, with face-to-face student and instructor interactions, have regular schedules that accommodate fixed meeting times, and have easy access to campus."
+  },
+  campusHybrid: {
+    name: "Campus Hybrid",
+    definition: "Physical attendance required, but fewer days per week — reduces seat time up to 49%. USA defines hybrid as a reduction in synchronous class time.",
+    location: "On campus",
+    meetings: "Combination of regularly scheduled meeting times and online asynchronous coursework",
+    onlineWork: "At least 30% of learning activities are asynchronous online",
+    example: "MWF class meets 2× a week; TR class meets 1× a week",
+    target: "Students who desire a structured, traditional classroom setting with student and instructor face-to-face interactions, but are also self-directed to complete online work, have regular schedules that accommodate occasional fixed meeting times, and easy access to campus."
+  },
+  integratedHybrid: {
+    name: "Integrated Hybrid",
+    definition: "Physical attendance required, but fewer times per semester — reduces seat time up to 85%. USA defines hybrid as a reduction in synchronous class time.",
+    location: "Scheduled rotation: campus and online (instructor dictated)",
+    meetings: "Combination of scheduled meeting times and online asynchronous coursework",
+    onlineWork: "At least 30% of learning activities are asynchronous online",
+    example: "Class meets 3× a semester — two in person and one remote, for 2 hours",
+    target: "Students who desire occasional face-to-face interactions with their instructor and classmates, but are self-directed to complete most coursework online, have schedules that accommodate a few fixed meeting times per semester, and can travel to campus when required."
+  },
+  remoteScheduled: {
+    name: "Remote Scheduled",
+    definition: "100% remote, but all classes meet at a regularly scheduled time.",
+    location: "Online",
+    meetings: "Regularly scheduled meeting times — online",
+    onlineWork: "Occasionally",
+    example: "Every MWF from 8–8:50 AM via a web conferencing platform (no reduction)",
+    target: "Students who have regular schedules that accommodate fixed meeting times online, have access to reliable technology, are comfortable in online learning environments, but desire online interactions with instructor and students, and are self-directed to complete online work."
+  },
+  remoteHybrid: {
+    name: "Remote Hybrid",
+    definition: "100% remote, but fewer synchronous class meetings than Remote Scheduled. USA defines hybrid as a reduction in synchronous class time.",
+    location: "Online",
+    meetings: "Combination of regularly scheduled remote meeting times and online asynchronous coursework",
+    onlineWork: "At least 30% of learning activities are asynchronous online",
+    example: "M class meets 6× during the semester on Zoom (66% reduction)",
+    target: "Students who are comfortable in online learning environments, have access to reliable technology, and have schedules that accommodate occasional meeting times online."
+  },
+  remoteIndependent: {
+    name: "Remote Independent",
+    definition: "No synchronous meetings — 100% self-paced within syllabus deadlines.",
+    location: "Online",
+    meetings: "No scheduled meeting times; all coursework is completed asynchronously",
+    onlineWork: "Always — 100% of learning activities are asynchronous online",
+    example: "No meeting times. All coursework is completed in Canvas",
+    target: "Students who are comfortable in online learning environments, have schedules that do not accommodate fixed meeting times, and have access to reliable technology. Best suited for self-directed learners that need schedule flexibility or prefer to learn at their own pace."
+  },
+  multiAccess: {
+    name: "Multi-Access",
+    definition: "Instructor provides instruction within the classroom, but the student chooses to attend in-person, remote synchronous, or remote asynchronous. Academic programs may utilize any two or all three of the modalities.",
+    location: "On campus or online (student choice)",
+    meetings: "On campus or online at scheduled meeting times, or asynchronous (student choice)",
+    onlineWork: "All learning activities are planned to equally serve students who attend in any modality",
+    example: "Student choice to attend in-person, via Zoom, or asynchronously (some courses may offer only two of the three)",
+    target: "Students who need the flexibility to attend class meetings either in-person, online, or work asynchronously; have access to reliable technology, are comfortable with in-person or online environments, and are self-directed to complete online work."
+  }
+};
+const KEYS = ["campusTraditional","campusHybrid","integratedHybrid","remoteScheduled","remoteHybrid","remoteIndependent","multiAccess"];
 
-      function onCreditsChange() {
-        const credits = parseInt(document.getElementById("creditsSelect").value);
-        document.getElementById("defaultIndText").innerText = credits * 30;
-        applyDefaultIndependent(true);
-        enforceFloorLocks();
-        calculateTotals();
-      }
+// ===== Questions & scoring =====
+// Each option adds points per modality:
+// [campusTraditional, campusHybrid, integratedHybrid, remoteScheduled, remoteHybrid, remoteIndependent, multiAccess]
+const QUESTIONS = [
+  {
+    text: "How well can your weekly schedule handle fixed class meeting times?",
+    help: "Think about work, family, athletics, or other commitments each semester.",
+    options: [
+      { title: "Easily — I can attend the same times every week", sub: "e.g., every MWF at 8 AM", pts: [3,2,1,3,2,0,2] },
+      { title: "Sometimes — I can make occasional scheduled meetings", sub: "A handful of set dates per semester works", pts: [0,3,3,0,3,1,2] },
+      { title: "Rarely — my schedule changes week to week", sub: "Shift work, caregiving, travel, etc.", pts: [0,0,1,0,1,3,3] },
+      { title: "Not at all — I need zero required meeting times", sub: "I must fit coursework around my life", pts: [0,0,0,0,0,3,1] }
+    ]
+  },
+  {
+    text: "How easy is it for you to get to the USA campus?",
+    help: "Consider distance, transportation, parking, and how often you could realistically come.",
+    options: [
+      { title: "Very easy — I'm on or near campus regularly", sub: "", pts: [3,3,2,1,1,0,3] },
+      { title: "Doable occasionally — a few trips a semester is fine", sub: "", pts: [1,3,3,1,2,1,2] },
+      { title: "Difficult — I live far away or can't commute", sub: "", pts: [0,0,0,3,3,3,1] }
+    ]
+  },
+  {
+    text: "Where do you learn best?",
+    help: "Be honest about the environment where you focus and engage the most.",
+    options: [
+      { title: "In a physical classroom, face-to-face", sub: "I engage most when I'm in the room", pts: [3,2,1,0,0,0,1] },
+      { title: "In live online classes (Zoom)", sub: "I like real-time classes but from anywhere", pts: [0,0,1,3,2,1,1] },
+      { title: "On my own, working through materials at my pace", sub: "Videos, readings, and assignments on my schedule", pts: [0,1,2,0,1,3,1] },
+      { title: "A mix — it depends on the week", sub: "I like being able to switch it up", pts: [1,2,2,1,2,1,3] }
+    ]
+  },
+  {
+    text: "How self-directed are you with independent online coursework?",
+    help: "Online-heavy formats require managing deadlines without regular in-person reminders.",
+    options: [
+      { title: "Very — I set my own pace and never miss deadlines", sub: "", pts: [1,2,3,1,2,3,3] },
+      { title: "Fairly — I do fine with some structure and check-ins", sub: "", pts: [2,3,2,2,3,1,2] },
+      { title: "Not very — I need regular class meetings to stay on track", sub: "", pts: [3,1,0,3,1,0,1] }
+    ]
+  },
+  {
+    text: "Do you have reliable technology for online learning?",
+    help: "A dependable computer, webcam, and high-speed internet where you study.",
+    options: [
+      { title: "Yes — reliable computer and internet", sub: "", pts: [1,2,3,3,3,3,3] },
+      { title: "Mostly — occasional connection or device issues", sub: "", pts: [2,2,1,1,1,1,2] },
+      { title: "No — my access is limited or unreliable", sub: "Campus formats keep tech requirements lowest", pts: [3,1,0,0,0,0,1] }
+    ]
+  },
+  {
+    text: "How important is live interaction with your instructor and classmates?",
+    help: "Real-time discussion, immediate questions, group energy.",
+    options: [
+      { title: "Essential — I want live interaction every week", sub: "", pts: [3,1,1,3,1,0,2] },
+      { title: "Helpful — some live sessions are enough", sub: "", pts: [1,3,3,1,3,1,3] },
+      { title: "Optional — discussion boards and email work for me", sub: "", pts: [0,1,2,0,1,3,1] }
+    ]
+  },
+  {
+    text: "If your week suddenly changed, what would you want your course to allow?",
+    help: "This gets at how much built-in flexibility you need.",
+    options: [
+      { title: "Nothing changes — I like a fixed routine I can count on", sub: "", pts: [3,1,0,3,1,0,0] },
+      { title: "Fewer required meetings so there's less to reschedule", sub: "", pts: [0,3,3,0,3,2,1] },
+      { title: "The choice to attend in person, on Zoom, or catch up later", sub: "", pts: [0,0,0,0,0,1,3] },
+      { title: "Total freedom — no meetings to miss in the first place", sub: "", pts: [0,0,1,0,0,3,1] }
+    ]
+  }
+];
 
-      function onInputChange() {
-        calculateTotals();
-      }
+// ===== Shared detail card markup =====
+function detailGridHTML(m) {
+  return '<div class="detail-grid">' +
+    '<div class="detail-box"><div class="dl">Class Meetings</div><div class="dv">' + m.meetings + '</div></div>' +
+    '<div class="detail-box"><div class="dl">Location</div><div class="dv">' + m.location + '</div></div>' +
+    '<div class="detail-box"><div class="dl">Independent Online Work</div><div class="dv">' + m.onlineWork + '</div></div>' +
+    '<div class="detail-box"><div class="dl">Attendance Example</div><div class="dv">' + m.example + '</div></div>' +
+    '<div class="detail-box full"><div class="dl">About This Format</div><div class="dv">' + m.definition + '</div></div>' +
+    '<div class="detail-box full"><div class="dl">Target Student</div><div class="dv">' + m.target + '</div></div>' +
+  '</div>';
+}
 
-      function updateView() {
-        const modalitySelect = document.getElementById("modalitySelect");
-        const selectedModality = modalitySelect.value;
-        const activeCategories = modalityMapping[selectedModality] || [];
+// ===== State =====
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
 
-        // 1. Show/Hide Category Cards
-        ['inPerson', 'syncDist', 'asyncDist'].forEach(cat => {
-          const card = document.getElementById(`card-${cat}`);
-          if (activeCategories.includes(cat)) {
-            card.classList.add('active'); 
-          } else {
-            card.classList.remove('active'); 
-            card.querySelectorAll('input').forEach(input => input.value = 0);
-          }
-        });
+const $ = id => document.getElementById(id);
 
-        // 2. Campus Traditional Rule: Strip instructional rows from Async box, leaving only Independent Learning
-        const isTraditional = (selectedModality === 'campusTraditional');
-        document.querySelectorAll('#card-asyncDist .async-inst-group').forEach(el => {
-          el.style.display = isTraditional ? 'none' : 'flex';
-          if (isTraditional) el.querySelector('input').value = 0;
-        });
-        const genRow = document.getElementById('generalIndRow');
-        genRow.style.borderTop = isTraditional ? 'none' : '1px dashed #ccc';
-        genRow.style.paddingTop = isTraditional ? '0' : '10px';
-        genRow.style.marginTop = isTraditional ? '0' : '10px';
+// ===== Intro chips with hover popover =====
+const popover = document.createElement("div");
+popover.className = "modality-pop hidden";
+document.body.appendChild(popover);
+let popKey = null, hideTimer = null;
 
-        // 3. Populate and Show Modality Overview Box
-        const infoBox = document.getElementById("modalityInfoBox");
-        if (selectedModality && modalityDetails[selectedModality]) {
-          const details = modalityDetails[selectedModality];
-          const displayName = modalitySelect.options[modalitySelect.selectedIndex].text;
-          document.getElementById("infoTitle").innerText = displayName + " Overview";
-          document.getElementById("infoSections").innerHTML = details.sectionNumbers;
-          document.getElementById("infoSchedule").innerHTML = details.scheduleTypes;
-          document.getElementById("infoResponsibilities").innerHTML = details.responsibilities;
-          infoBox.classList.add("active");
-        } else {
-          infoBox.classList.remove("active");
-        }
+function showPopover(chip, key) {
+  clearTimeout(hideTimer);
+  popKey = key;
+  const m = MODALITIES[key];
+  popover.innerHTML = '<div class="pop-title">' + m.name + '</div>' + detailGridHTML(m);
+  popover.classList.remove("hidden");
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c === chip));
+  // position: below chip, centered, clamped to viewport; flip above if needed
+  const r = chip.getBoundingClientRect();
+  const pw = popover.offsetWidth, ph = popover.offsetHeight;
+  let left = Math.min(Math.max(12, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 12);
+  let top = r.bottom + 10;
+  if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 10);
+  popover.style.left = left + "px";
+  popover.style.top = top + "px";
+}
 
-        document.getElementById("exportMsg").innerText = "";
-      }
+function hidePopover() {
+  hideTimer = setTimeout(() => {
+    popover.classList.add("hidden");
+    popKey = null;
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  }, 120);
+}
 
-      // Automatically defaults Independent Learning to 30, 60, 90, or 120 based on credits
-      function applyDefaultIndependent(forceReset) {
-        const credits = parseInt(document.getElementById("creditsSelect").value);
-        const targetInd = credits * 30;
-        const genInput = document.getElementById("generalIndInput");
-        
-        if (forceReset || parseFloat(genInput.value) === 0) {
-          genInput.value = targetInd;
-        }
-      }
+window.addEventListener("scroll", () => { popover.classList.add("hidden"); }, { passive: true });
 
-      // Enforces 51% In-Person Floor for Campus Hybrid
-      function enforceFloorLocks() {
-        const selectedModality = document.getElementById("modalitySelect").value;
-        const credits = parseInt(document.getElementById("creditsSelect").value);
-        const targetInst = credits * 15;
-        
-        if (selectedModality === 'campusHybrid') {
-          const minInPerson = Math.ceil(targetInst * 0.51); // 51% floor
-          let currentInPersonTotal = 0;
-          document.querySelectorAll('#card-inPerson .inst-input').forEach(inp => {
-            currentInPersonTotal += parseFloat(inp.value) || 0;
-          });
+function buildChips() {
+  const box = $("modalityChips");
+  KEYS.forEach(key => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = MODALITIES[key].name;
+    chip.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (popKey === key && !popover.classList.contains("hidden")) { clearTimeout(hideTimer); popover.classList.add("hidden"); popKey = null; chip.classList.remove("active"); }
+      else showPopover(chip, key);
+    });
+    box.appendChild(chip);
+  });
+  document.addEventListener("click", (e) => {
+    if (!popover.contains(e.target)) { popover.classList.add("hidden"); popKey = null; document.querySelectorAll(".chip").forEach(c => c.classList.remove("active")); }
+  });
+}
+buildChips();
 
-          if (currentInPersonTotal < minInPerson) {
-            let otherInPerson = currentInPersonTotal - (parseFloat(document.getElementById("inPersonDirect").value) || 0);
-            let requiredDirect = Math.max(0, minInPerson - otherInPerson);
-            document.getElementById("inPersonDirect").value = requiredDirect;
-          }
-          document.getElementById("inPersonDirect").min = minInPerson;
-        } else {
-          document.getElementById("inPersonDirect").min = 0;
-        }
-      }
+function startQuiz() {
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  popover.classList.add("hidden");
+  $("introScreen").classList.add("hidden");
+  $("resultsScreen").classList.add("hidden");
+  $("quizScreen").classList.remove("hidden");
+  renderQuestion();
+}
 
-      function calculateTotals() {
-        const credits = parseInt(document.getElementById("creditsSelect").value);
-        const targetInst = credits * 15;
-        const targetInd = credits * 30;
-        const selectedModality = document.getElementById("modalitySelect").value;
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  $("qNumber").textContent = "Question " + (current + 1);
+  $("qText").textContent = q.text;
+  $("qHelp").textContent = q.help;
+  $("progressLabel").textContent = "Question " + (current + 1) + " of " + QUESTIONS.length;
+  $("progressFill").style.width = ((current) / QUESTIONS.length * 100) + "%";
 
-        let currentInst = 0;
-        let currentInd = 0;
+  const box = $("optionsBox");
+  box.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.className = "opt" + (answers[current] === i ? " selected" : "");
+    b.innerHTML = '<span class="opt-title">' + opt.title + '</span>' +
+      (opt.sub ? '<span class="opt-sub">' + opt.sub + '</span>' : '');
+    b.onclick = () => selectOption(i);
+    box.appendChild(b);
+  });
+  $("backBtn").disabled = current === 0;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
-        document.querySelectorAll('.category-card.active .inst-input').forEach(input => {
-          if (input.closest('.input-group').style.display !== 'none') {
-            currentInst += parseFloat(input.value) || 0;
-          }
-        });
+function selectOption(i) {
+  answers[current] = i;
+  // brief visual confirmation, then advance
+  renderQuestion();
+  setTimeout(() => {
+    if (current < QUESTIONS.length - 1) {
+      current++;
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  }, 220);
+}
 
-        document.querySelectorAll('.category-card.active .ind-input').forEach(input => {
-          if (input.closest('.input-group').style.display !== 'none') {
-            currentInd += parseFloat(input.value) || 0;
-          }
-        });
+function goBack() {
+  if (current > 0) { current--; renderQuestion(); }
+}
 
-        document.getElementById("totalInst").innerText = currentInst;
-        document.getElementById("totalInd").innerText = currentInd;
+function computeScores() {
+  const N = KEYS.length;
+  const totals = new Array(N).fill(0);
+  const maxTotals = new Array(N).fill(0);
+  QUESTIONS.forEach((q, qi) => {
+    // max possible per question per modality
+    for (let m = 0; m < N; m++) {
+      maxTotals[m] += Math.max(...q.options.map(o => o.pts[m]));
+    }
+    const a = answers[qi];
+    if (a !== null) {
+      for (let m = 0; m < N; m++) totals[m] += q.options[a].pts[m];
+    }
+  });
+  return KEYS.map((key, m) => ({
+    key,
+    score: totals[m],
+    pct: Math.round((totals[m] / maxTotals[m]) * 100)
+  })).sort((a, b) => b.pct - a.pct);
+}
 
-        // Instructional Target Badge
-        const statusInst = document.getElementById("statusInst");
-        if (currentInst >= targetInst) {
-          statusInst.className = "status pass";
-          statusInst.innerText = "✓ Target met (" + targetInst + "+)";
-        } else {
-          statusInst.className = "status fail";
-          statusInst.innerText = "Target: " + targetInst + " not met";
-        }
+function showResults() {
+  $("quizScreen").classList.add("hidden");
+  $("resultsScreen").classList.remove("hidden");
+  const ranked = computeScores();
+  const list = $("resultsList");
+  list.innerHTML = "";
 
-        // Independent Target Badge
-        const statusInd = document.getElementById("statusInd");
-        if (currentInd >= targetInd) {
-          statusInd.className = "status pass";
-          statusInd.innerText = "✓ Target met (" + targetInd + "+)";
-        } else {
-          statusInd.className = "status fail";
-          statusInd.innerText = "Target: " + targetInd + " not met";
-        }
+  ranked.forEach((r, i) => {
+    const m = MODALITIES[r.key];
+    const item = document.createElement("div");
+    item.className = "result-item" + (i === 0 ? " best open" : "");
+    item.style.animationDelay = (i * 0.08) + "s";
+    item.innerHTML =
+      '<div class="result-head">' +
+        '<div class="rank-badge">' + (i + 1) + '</div>' +
+        '<div class="result-name-block">' +
+          '<span class="result-name">' + m.name + '</span>' +
+          (i === 0 ? '<span class="best-tag">Best Match</span>' : '') +
+          '<div class="match-bar-track"><div class="match-bar" data-pct="' + r.pct + '"></div></div>' +
+        '</div>' +
+        '<div class="match-pct">' + r.pct + '% fit</div>' +
+        '<div class="caret">▼</div>' +
+      '</div>' +
+      '<div class="result-detail">' + detailGridHTML(m) + '</div>';
+    item.querySelector(".result-head").onclick = () => item.classList.toggle("open");
+    list.appendChild(item);
+  });
 
-        // --- DYNAMIC POLICY FLOOR CHECKS & INDICATORS ---
-        const floorBox = document.getElementById("policyFloorBox");
-        const floorContent = document.getElementById("floorContent");
-        let floorHTML = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  // animate bars after paint
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll(".match-bar").forEach(bar => {
+        bar.style.width = bar.dataset.pct + "%";
+      });
+    }, 60);
+  });
+}
 
-        if (selectedModality === 'campusHybrid') {
-          const minInPerson = Math.ceil(targetInst * 0.51);
-          let currentInPerson = 0;
-          document.querySelectorAll('#card-inPerson .inst-input').forEach(inp => currentInPerson += parseFloat(inp.value) || 0);
-          
-          floorHTML = `
-            <div style="font-weight: bold; color: #856404; margin-bottom: 6px;">🔒 Campus Hybrid Policy Floor (51% In-Person Min):</div>
-            <div class="floor-row">
-              <span><strong>In-Person Instruction:</strong> Current: <strong>${currentInPerson} hrs</strong> | Floor: <strong>${minInPerson} hrs</strong> (Field Locked to Minimum)</span>
-              <span class="status pass">✓ Floor Met & Locked</span>
-            </div>`;
-        } 
-        else if (selectedModality === 'remoteHybrid') {
-          const minAsync = (targetInst * 0.30).toFixed(1);
-          let currentAsyncInst = 0;
-          document.querySelectorAll('#card-asyncDist .async-inst-input').forEach(inp => currentAsyncInst += parseFloat(inp.value) || 0);
-          
-          let badgeClass = currentAsyncInst >= minAsync ? "status pass" : "status fail";
-          let badgeText = currentAsyncInst >= minAsync ? `✓ Floor Met (${minAsync}+ hrs)` : `⚠ Below Floor (${minAsync} hrs min)`;
-          
-          floorHTML = `
-            <div style="font-weight: bold; color: #856404; margin-bottom: 6px;">📊 Remote Hybrid Policy Floor (30% Async Min):</div>
-            <div class="floor-row">
-              <span><strong>Async Distance Instruction:</strong> Current: <strong>${currentAsyncInst} hrs</strong> | Required Minimum: <strong>${minAsync} hrs</strong></span>
-              <span class="${badgeClass}">${badgeText}</span>
-            </div>`;
-        }
-        else if (selectedModality === 'integratedHybrid') {
-          const minInPerson = (targetInst * 0.15).toFixed(1);
-          const minAsync = (targetInst * 0.30).toFixed(1);
-          
-          let currentInPerson = 0;
-          document.querySelectorAll('#card-inPerson .inst-input').forEach(inp => currentInPerson += parseFloat(inp.value) || 0);
-          
-          let currentAsyncInst = 0;
-          document.querySelectorAll('#card-asyncDist .async-inst-input').forEach(inp => currentAsyncInst += parseFloat(inp.value) || 0);
-          
-          let badgeInPerson = currentInPerson >= minInPerson ? `<span class="status pass">✓ Floor Met</span>` : `<span class="status fail">⚠ Below 15% Min</span>`;
-          let badgeAsync = currentAsyncInst >= minAsync ? `<span class="status pass">✓ Floor Met</span>` : `<span class="status fail">⚠ Below 30% Min</span>`;
-
-          floorHTML = `
-            <div style="font-weight: bold; color: #856404; margin-bottom: 6px;">📍 Integrated Hybrid Policy Floor Requirements:</div>
-            <div class="floor-row">
-              <span><strong>In-Person Instruction (15% min):</strong> Current: <strong>${currentInPerson} hrs</strong> | Required: <strong>${minInPerson} hrs</strong></span>
-              ${badgeInPerson}
-            </div>
-            <div class="floor-row" style="margin-top: 6px;">
-              <span><strong>Async Remote Instruction (30% min):</strong> Current: <strong>${currentAsyncInst} hrs</strong> | Required: <strong>${minAsync} hrs</strong></span>
-              ${badgeAsync}
-            </div>`;
-        }
-        else if (selectedModality === 'remoteScheduled') {
-          const minSync = targetInst; // 15 hrs per credit = 100% of instructional total
-          let currentSync = 0;
-          document.querySelectorAll('#card-syncDist .sync-inst-input').forEach(inp => currentSync += parseFloat(inp.value) || 0);
-          
-          let badgeClass = currentSync >= minSync ? "status pass" : "status fail";
-          let badgeText = currentSync >= minSync ? `✓ Sync Floor Met (${minSync}+ hrs)` : `⚠ Below Sync Floor (${minSync} hrs min)`;
-
-          floorHTML = `
-            <div style="font-weight: bold; color: #856404; margin-bottom: 6px;">📍 Remote Scheduled Policy Requirement:</div>
-            <div class="floor-row">
-              <span><strong>Synchronous Distance Instruction:</strong> Current: <strong>${currentSync} hrs</strong> | Required Minimum: <strong>${minSync} hrs</strong> (15 hrs/credit)</span>
-              <span class="${badgeClass}">${badgeText}</span>
-            </div>`;
-        }
-        else if (selectedModality === 'multiAccess') {
-          floorHTML = `
-            <div style="font-weight: bold; color: #856404; margin-bottom: 4px;">ℹ️ Multi-Access Policy Notice:</div>
-            <div style="font-size: 13px; color: #333;">For course sections numbered <strong>201–249</strong>, a minimum of <strong>15 hours of synchronous instruction per credit hour</strong> is strictly required. Both in-person and remote synchronous activities may be applied to meet this requirement.</div>`;
-        }
-
-        if (floorHTML !== "") {
-          floorContent.innerHTML = floorHTML;
-          floorBox.classList.add("active");
-        } else {
-          floorBox.classList.remove("active");
-        }
-      }
-
-      // Standalone CSV Generator & File Downloader (Fixed for bold label tags!)
-      function exportData() {
-        const modalitySelect = document.getElementById("modalitySelect");
-        if (!modalitySelect.value) {
-          alert("Please select a Course Modality first.");
-          return;
-        }
-
-        const btn = document.getElementById("exportBtn");
-        const msg = document.getElementById("exportMsg");
-        
-        btn.innerText = "Generating CSV...";
-        btn.disabled = true;
-        msg.innerText = "";
-
-        let breakdownArr = [];
-        document.querySelectorAll('.category-card.active .input-group').forEach(group => {
-          if (group.style.display !== 'none') {
-            // Safely clone label and remove tooltip element to grab clean activity label text
-            let labelEl = group.querySelector('label').cloneNode(true);
-            let tooltip = labelEl.querySelector('.tooltip-container');
-            if (tooltip) tooltip.remove();
-            let label = labelEl.textContent.trim();
-
-            let val = parseFloat(group.querySelector('input').value) || 0;
-            if (val > 0) {
-              breakdownArr.push(label + ": " + val + " hrs");
-            }
-          }
-        });
-
-        const modality = modalitySelect.options[modalitySelect.selectedIndex].text;
-        const credits = document.getElementById("creditsSelect").value;
-        const instTotal = document.getElementById("totalInst").innerText;
-        const indTotal = document.getElementById("totalInd").innerText;
-        const details = breakdownArr.length > 0 ? breakdownArr.join(" | ") : "No hours entered";
-
-        const headers = ["Course Modality", "Target Credits", "Instructional Total (A)", "Independent Total (B)", "Activity Breakdown"];
-        const row = [
-          `"${modality}"`,
-          `"${credits}"`,
-          `"${instTotal}"`,
-          `"${indTotal}"`,
-          `"${details.replace(/"/g, '""')}"`
-        ];
-
-        const csvContent = headers.join(",") + "\n" + row.join(",");
-
-        try {
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const link = document.createElement("a");
-          const url = URL.createObjectURL(blob);
-          
-          const cleanModalityName = modality.replace(/[^a-zA-Z0-9]/g, "_");
-          link.setAttribute("href", url);
-          link.setAttribute("download", `Credit_Hours_${cleanModalityName}.csv`);
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          btn.innerText = "Download CSV Export";
-          btn.disabled = false;
-          msg.style.color = "#155724";
-          msg.innerText = "✓ CSV downloaded successfully!";
-          setTimeout(() => { msg.innerText = ""; }, 5000);
-        } catch (err) {
-          btn.innerText = "Download CSV Export";
-          btn.disabled = false;
-          msg.style.color = "#721c24";
-          msg.innerText = "Error exporting file: " + err.message;
-        }
-      }
-    </script>
-  </body>
+function restart() { startQuiz(); }
+</script>
+</body>
 </html>
