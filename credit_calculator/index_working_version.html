@@ -46,7 +46,7 @@
       }
       .tooltip-text {
         visibility: hidden;
-        width: 250px;
+        width: 230px;
         background-color: #333;
         color: #fff;
         text-align: left;
@@ -165,15 +165,19 @@
         <div id="card-inPerson" class="category-card">
           <h3>In-Person Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities conducted physically face-to-face in a shared campus classroom or facility.</span></span></h3>
           <div class="input-group">
-            <label>Structured Instructional Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
+            <label>Direct Instruction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live lectures, presentations, demonstrations, or direct dissemination of content by the instructor.</span></span></label>
             <input type="number" class="calc-input inst-input" id="inPersonDirect" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
           </div>
           <div class="input-group">
-            <label>Interactive and Applied Learning Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
+            <label>Guided Interaction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Instructor-facilitated group work, discussions, active problem-solving, or tutorials.</span></span></label>
             <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
           </div>
           <div class="input-group">
-            <label>Assessment Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
+            <label>Formative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Low-stakes quizzes, draft reviews, peer feedback, or checkpoints used to monitor student learning.</span></span></label>
+            <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
+          </div>
+          <div class="input-group">
+            <label>Summative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Exams, final project presentations, major evaluations, or culminating demonstrations of competency.</span></span></label>
             <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
           </div>
         </div>
@@ -182,15 +186,19 @@
         <div id="card-syncDist" class="category-card">
           <h3>Sync Distance Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live web-conferencing or remote sessions where instructor and students meet online at a scheduled time.</span></span></h3>
           <div class="input-group">
-            <label>Structured Instructional Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
+            <label>Direct Instruction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live remote lectures, web-conferencing presentations, or real-time online content delivery.</span></span></label>
             <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group">
-            <label>Interactive and Applied Learning Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
+            <label>Guided Interaction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live online breakout rooms, synchronous chat discussions, or instructor-guided remote exercises.</span></span></label>
             <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group">
-            <label>Assessment Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
+            <label>Formative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Synchronous online quizzes, live polling, or real-time check-ins during virtual class.</span></span></label>
+            <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
+          </div>
+          <div class="input-group">
+            <label>Summative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Proctored online exams, synchronous virtual presentations, or scheduled oral evaluations.</span></span></label>
             <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
         </div>
@@ -199,21 +207,24 @@
         <div id="card-asyncDist" class="category-card">
           <h3>Async Distance Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Online instructional activities completed flexibly within timeframes without scheduled real-time meetings.</span></span></h3>
           <div class="input-group async-inst-group">
-            <label>Structured Instructional Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
+            <label>Direct Instruction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Recorded lecture videos, interactive modules, or instructor-authored digital presentations.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group async-inst-group">
-            <label>Interactive and Applied Learning Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
+            <label>Guided Interaction <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Asynchronous discussion forums, peer-review workshops, or collaborative document editing.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group async-inst-group">
-            <label>Assessment Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
+            <label>Formative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Asynchronous practice quizzes, self-assessments, or draft submissions with feedback.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
-          
+          <div class="input-group async-inst-group">
+            <label>Summative Assessment <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Final project submissions, asynchronous exam windows, or portfolio evaluations.</span></span></label>
+            <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
+          </div>
           <!-- Independent Learning Row (The ONLY location for out-of-class study across all modalities) -->
           <div class="input-group" id="generalIndRow" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
-            <label><strong>Independent Learning Activities</strong> <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-assigned activities completed independently by students to prepare for, reinforce, extend, or demonstrate learning.</span></span></label>
+            <label><strong>Independent Learning</strong> <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Out-of-class student effort including reading, homework, studying, and preparation.</span></span></label>
             <input type="number" class="calc-input ind-input" id="generalIndInput" min="0" value="0" oninput="onInputChange()">
           </div>
         </div>
