@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Course Workload Estimator</title>
+  <style>
+    :root {
+      --usa-blue: #00205B;
+      --usa-red: #BA0C2F;
+      --usa-red-dark: #8f0a24;
+      --bg: #f4f5f9;
+      --card: #ffffff;
+      --text: #1a2233;
+      --muted: #5b6478;
+      --border: #e2e5ee;
+      --gold: #f0b323;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px 10px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border-top: 6px solid var(--usa-blue);
+      padding: 25px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    header h1 {
+      color: var(--usa-blue);
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .meta-links {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .meta-links a {
+      color: var(--usa-red);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .meta-links a:hover {
+      text-decoration: underline;
+      color: var(--usa-red-dark);
+    }
+
+    /* 4-column layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    @media (max-width: 992px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card-panel {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .card-panel h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--usa-blue);
+      border-bottom: 2px solid var(--usa-red);
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .form-group input[type="number"],
+    .form-group select {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--text);
+      background-color: #fff;
+    }
+
+    .form-group input[type="number"]:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--usa-blue);
+      box-shadow: 0 0 0 2px rgba(0, 32, 91, 0.15);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      accent-color: var(--usa-red);
+      width: 16px;
+      height: 16px;
+    }
+
+    .rate-display {
+      background: #fff;
+      border: 1px dashed var(--border);
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .rate-display strong {
+      color: var(--usa-blue);
+    }
+
+    .conditional-panel {
+      display: none;
+      background: #fff;
+      border-left: 3px solid var(--gold);
+      padding: 8px;
+      margin-top: 8px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .conditional-panel.active {
+      display: block;
+    }
+
+    /* Workload Results styling */
+    .results-panel {
+      background: var(--usa-blue);
+      color: #fff;
+      border-radius: 6px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .results-panel h2 {
+      border-bottom-color: var(--gold);
+      color: #fff;
+    }
+
+    .result-item {
+      text-align: right;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-item label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .result-item span {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--gold);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--usa-blue);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Enhanced Course Workload Estimator</h1>
+    <div class="meta-links">
+      <strong>Research &amp; Design:</strong> 
+      <a href="https://cat.wfu.edu/about/our-team/" target="_blank">Betsy Barre</a> | 
+      <a href="https://oe.wfu.edu/about/" target="_blank">Allen Brown</a> | 
+      <a href="http://www.justinesarey.com" target="_blank">Justin Esarey</a>
+      <br>
+      <a href="http://www.cte.rice.edu/workload#howcalculated" target="_blank">Click Here for Estimation Details</a>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Column 1 -->
+    <div>
+      <div class="card-panel">
+        <h2>Course Info</h2>
+        <div class="form-group">
+          <label for="classweeks">Class Duration (Weeks):</label>
+          <input type="number" id="classweeks" value="15" min="1">
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <h2>Reading Assignments</h2>
+        <div class="form-group">
+          <label for="weeklypages">Pages Per Week:</label>
+          <input type="number" id="weeklypages" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="readingdensity">Page Density:</label>
+          <select id="readingdensity">
+            <option value="1">450 Words</option>
+            <option value="2">600 Words</option>
+            <option value="3">750 Words</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="difficulty">Difficulty:</label>
+          <select id="difficulty">
+            <option value="1">No New Concepts</option>
+            <option value="2">Some New Concepts</option>
+            <option value="3">Many New Concepts</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="readingpurpose">Purpose:</label>
+          <select id="readingpurpose">
+            <option value="1">Survey</option>
+            <option value="2">Understand</option>
+            <option value="3">Engage</option>
+          </select>
+        </div>
+
+        <div class="rate-display">
+          Estimated Reading Rate:<br>
+          <strong id="pagesperhour-out">67 pages per hour</strong>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="setreadingrate">
+          <label for="setreadingrate">manually adjust</label>
+        </div>
+
+        <div class="conditional-panel" id="panel-reading-override">
+          <div class="form-group">
+            <label for="overridepagesperhour">Pages Read Per Hour:</label>
+            <input type="number" id="overridepagesperhour" value="10" min="0">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 2 -->
+    <div>
+      <div class="card-panel">
+        <h2>Writing Assignments</h2>
+        <div class="form-group">
+          <label for="semesterpages">Pages Per Semester:</label>
+          <input type="number" id="semesterpages" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="writtendensity">Page Density:</label>
+          <select id="writtendensity">
+            <option value="1">250 Words</option>
+            <option value="2">500 Words</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="writingpurpose">Genre:</label>
+          <select id="writingpurpose">
+            <option value="1">Reflection/Narrative</option>
+            <option value="2">Argument</option>
+            <option value="3">Research</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="draftrevise">Drafting:</label>
+          <select id="draftrevise">
+            <option value="1">No Drafting</option>
+            <option value="2">Minimal Drafting</option>
+            <option value="3">Extensive Drafting</option>
+          </select>
+        </div>
+
+        <div class="rate-display">
+          Estimated Writing Rate:<br>
+          <strong id="hoursperwriting-out">0.75 hours per page</strong>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="setwritingrate">
+          <label for="setwritingrate">manually adjust</label>
+        </div>
+
+        <div class="conditional-panel" id="panel-writing-override">
+          <div class="form-group">
+            <label for="overridehoursperwriting">Hours Per Written Page:</label>
+            <input type="number" id="overridehoursperwriting" value="0.5" step="0.1" min="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <h2>Videos / Podcasts</h2>
+        <div class="form-group">
+          <label for="weeklyvideos">Hours Per Week:</label>
+          <input type="number" id="weeklyvideos" value="0" min="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 3 -->
+    <div>
+      <div class="card-panel">
+        <h2>Discussion Posts</h2>
+        <div class="form-group">
+          <label for="postsperweek">Posts per Week:</label>
+          <input type="number" id="postsperweek" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="postformat">Format:</label>
+          <select id="postformat">
+            <option value="1">Text</option>
+            <option value="2">Audio/Video</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="group-postlength-text">
+          <label for="postlength-text">Avg. Length (Words):</label>
+          <input type="number" id="postlength-text" value="250" min="0">
+        </div>
+
+        <div class="form-group" id="group-postlength-av" style="display: none;">
+          <label for="postlength-av">Avg. Length (Minutes):</label>
+          <input type="number" id="postlength-av" value="3" min="0">
+        </div>
+
+        <div class="rate-display">
+          Estimated Hours:<br>
+          <strong id="hoursperposts-out">0 hours / week</strong>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="setdiscussion">
+          <label for="setdiscussion">manually adjust</label>
+        </div>
+
+        <div class="conditional-panel" id="panel-discussion-override">
+          <div class="form-group">
+            <label for="overridediscussion">Hours Per Week:</label>
+            <input type="number" id="overridediscussion" value="1" min="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <h2>Exams</h2>
+        <div class="form-group">
+          <label for="exams">Exams Per Semester:</label>
+          <input type="number" id="exams" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="examhours">Study Hours Per Exam:</label>
+          <input type="number" id="examhours" value="5" min="0" max="50">
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="takehome">
+          <label for="takehome">Take-Home Exams</label>
+        </div>
+        <div class="conditional-panel" id="panel-takehome">
+          <div class="form-group">
+            <label for="exam-length">Exam Time Limit (Minutes):</label>
+            <input type="number" id="exam-length" value="60" min="0">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 4 -->
+    <div>
+      <div class="card-panel">
+        <h2>Other Assignments</h2>
+        <div class="form-group">
+          <label for="otherassign"># Per Semester:</label>
+          <input type="number" id="otherassign" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="otherhours">Hours Per Assignment:</label>
+          <input type="number" id="otherhours" value="0" min="0" max="50">
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="other-engage">
+          <label for="other-engage">Independent</label>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <h2>Class Meetings</h2>
+        <div class="form-group">
+          <label for="syncsessions">Live Meetings Per Week:</label>
+          <input type="number" id="syncsessions" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="synclength">Meeting Length (Hours):</label>
+          <input type="number" id="synclength" value="0" min="0" step="0.1">
+        </div>
+      </div>
+
+      <div class="results-panel">
+        <h2>Workload Estimates</h2>
+        <div class="result-item">
+          <label>Total Workload</label>
+          <span id="estimatedworkload">Total: 0 hrs/wk</span>
+        </div>
+        <div class="result-item">
+          <label>Independent Study</label>
+          <span id="estimatedoutofclass">Independent: 0 hrs/wk</span>
+        </div>
+        <div class="result-item">
+          <label>Contact Time</label>
+          <span id="estimatedengaged">Contact: 0 hrs/wk</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0 License</a>
+    </p>
+  </footer>
+</div>
+
+<script>
+  // -------------------------------------------------------------
+  // Data Matrices (Converted from R Array Structures)
+  // -------------------------------------------------------------
+
+  // pagesperhour[difficulty - 1][readingpurpose - 1][readingdensity - 1]
+  const pagesperhourData = [
+    // Density 1: 450 Words
+    [
+      [67, 33, 17], // No New Concepts (Survey, Learn, Engage)
+      [47, 24, 12], // Some New Concepts
+      [33, 17, 9]   // Many New Concepts
+    ],
+    // Density 2: 600 Words
+    [
+      [50, 25, 13],
+      [35, 18, 9],
+      [25, 13, 7]
+    ],
+    // Density 3: 750 Words
+    [
+      [40, 20, 10],
+      [28, 14, 7],
+      [20, 10, 5]
+    ]
+  ];
+
+  function getPagesPerHour(diff, purpose, density) {
+    return pagesperhourData[density - 1][diff - 1][purpose - 1];
+  }
+
+  // hoursperwriting[writtendensity - 1][draftrevise - 1][writingpurpose - 1]
+  const hoursperwritingData = [
+    // Density 1: 250 Words
+    [
+      [0.75, 1.25, 2.0], // No Drafting (Reflection, Argument, Research)
+      [1.5, 2.5, 4.0],  // Minimal Drafting
+      [1.0, 1.5, 2.5]   // Note: Mapped according to original R vector dim structure
+    ],
+    // Density 2: 500 Words
+    [
+      [1.5, 3.0, 5.0],
+      [3.0, 6.0, 10.0],
+      [2.0, 4.0, 8.0]
+    ]
+  ];
+
+  // Lookup implementation aligned precisely with original Shiny array order
+  const rawWritingData = [0.75, 1.5, 1, 2, 1.25, 2.5, 1.5, 3, 2, 4, 2.5, 5, 3, 6, 4, 8, 5, 10];
+  function getHoursPerWriting(density, draft, purpose) {
+    // R index formula for 3D array: (d-1) + (dr-1)*2 + (p-1)*6
+    const idx = (density - 1) + (draft - 1) * 2 + (purpose - 1) * 6;
+    return rawWritingData[idx];
+  }
+
+  // Helper to read numerical input values safely
+  const val = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const isChecked = (id) => document.getElementById(id).checked;
+
+  function calculate() {
+    const classweeks = val('classweeks') || 1; // avoid division by zero
+    const weeklypages = val('weeklypages');
+    const difficulty = parseInt(document.getElementById('difficulty').value);
+    const readingpurpose = parseInt(document.getElementById('readingpurpose').value);
+    const readingdensity = parseInt(document.getElementById('readingdensity').value);
+
+    const setreadingrate = isChecked('setreadingrate');
+    const overridepagesperhour = val('overridepagesperhour');
+
+    const semesterpages = val('semesterpages');
+    const writtendensity = parseInt(document.getElementById('writtendensity').value);
+    const writingpurpose = parseInt(document.getElementById('writingpurpose').value);
+    const draftrevise = parseInt(document.getElementById('draftrevise').value);
+
+    const setwritingrate = isChecked('setwritingrate');
+    const overridehoursperwriting = val('overridehoursperwriting');
+
+    const weeklyvideos = val('weeklyvideos');
+
+    const postsperweek = val('postsperweek');
+    const postformat = parseInt(document.getElementById('postformat').value);
+    const postlengthText = val('postlength-text');
+    const postlengthAv = val('postlength-av');
+    const setdiscussion = isChecked('setdiscussion');
+    const overridediscussion = val('overridediscussion');
+
+    const exams = val('exams');
+    const examhours = val('examhours');
+    const takehome = isChecked('takehome');
+    const examLength = val('exam-length');
+
+    const otherassign = val('otherassign');
+    const otherhours = val('otherhours');
+    const otherEngage = isChecked('other-engage');
+
+    const syncsessions = val('syncsessions');
+    const synclength = val('synclength');
+
+    // -------------------------------------------------------------
+    // Rates & Intermediate Calculations
+    // -------------------------------------------------------------
+
+    // 1. Reading Rate
+    let pagesperhourSel;
+    if (!setreadingrate) {
+      pagesperhourSel = getPagesPerHour(difficulty, readingpurpose, readingdensity);
+    } else {
+      pagesperhourSel = overridepagesperhour;
+    }
+    document.getElementById('pagesperhour-out').innerText = `${pagesperhourSel} pages per hour`;
+
+    // 2. Writing Rate
+    let hoursperwritingSel;
+    if (!setwritingrate) {
+      hoursperwritingSel = getHoursPerWriting(writtendensity, draftrevise, writingpurpose);
+    } else {
+      hoursperwritingSel = overridehoursperwriting;
+    }
+    document.getElementById('hoursperwriting-out').innerText = `${hoursperwritingSel} hours per page`;
+
+    // 3. Discussion Post Hours
+    let posthoursTotalSel = 0;
+    let posthoursOutClassSel = 0;
+
+    if (!setdiscussion) {
+      if (postformat === 1) { // Text
+        posthoursTotalSel = (postlengthText * postsperweek) / 250;
+        posthoursOutClassSel = posthoursTotalSel;
+      } else { // Audio/Video
+        // Total includes formula from R server code: 0.18*(length*posts) + (length*posts)/6
+        posthoursTotalSel = (0.18 * (postlengthAv * postsperweek)) + ((postlengthAv * postsperweek) / 6);
+        // Out-of-class uses: (length*posts)/3
+        posthoursOutClassSel = (postlengthAv * postsperweek) / 3;
+      }
+    } else {
+      posthoursTotalSel = overridediscussion;
+      posthoursOutClassSel = overridediscussion;
+    }
+
+    document.getElementById('hoursperposts-out').innerText = `${posthoursOutClassSel.toFixed(2)} hours / week`;
+
+    // 4. Exams Take-home
+    const takehomeSel = takehome ? examLength : 0;
+
+    // 5. Other Assignments
+    const otherTotal = otherassign * otherhours;
+    const otherOutClass = !otherEngage ? otherTotal : 0;
+    const otherContact = otherEngage ? otherTotal : 0;
+
+    // -------------------------------------------------------------
+    // Final Formulas (Mirroring R Shiny)
+    // -------------------------------------------------------------
+
+    // Total Workload
+    const totalWorkload = 
+      (weeklypages / pagesperhourSel) +
+      ((hoursperwritingSel * semesterpages) / classweeks) +
+      ((exams * examhours) / classweeks) +
+      ((otherassign * otherhours) / classweeks) +
+      (posthoursTotalSel) +
+      (weeklyvideos) +
+      (((takehomeSel / 60) * exams) / classweeks) +
+      (syncsessions * synclength);
+
+    // Independent (Out-of-Class) Workload
+    const outOfClassWorkload = 
+      (weeklypages / pagesperhourSel) +
+      ((hoursperwritingSel * semesterpages) / classweeks) +
+      ((exams * examhours) / classweeks) +
+      (weeklyvideos) +
+      (otherOutClass / classweeks) +
+      (((takehomeSel / 60) * exams) / classweeks);
+
+    // Engaged (Contact) Workload
+    const engagedWorkload = 
+      (posthoursOutClassSel) +
+      (syncsessions * synclength) +
+      (otherContact / classweeks);
+
+    // -------------------------------------------------------------
+    // Update UI Output
+    // -------------------------------------------------------------
+    document.getElementById('estimatedworkload').innerText = `Total: ${totalWorkload.toFixed(2)} hrs/wk`;
+    document.getElementById('estimatedoutofclass').innerText = `Independent: ${outOfClassWorkload.toFixed(2)} hrs/wk`;
+    document.getElementById('estimatedengaged').innerText = `Contact: ${engagedWorkload.toFixed(2)} hrs/wk`;
+  }
+
+  // -------------------------------------------------------------
+  // UI Event Handlers & Dynamic Visibility
+  // -------------------------------------------------------------
+  function setupUI() {
+    // Dynamic panel toggles
+    document.getElementById('setreadingrate').addEventListener('change', (e) => {
+      document.getElementById('panel-reading-override').classList.toggle('active', e.target.checked);
+    });
+
+    document.getElementById('setwritingrate').addEventListener('change', (e) => {
+      document.getElementById('panel-writing-override').classList.toggle('active', e.target.checked);
+    });
+
+    document.getElementById('setdiscussion').addEventListener('change', (e) => {
+      document.getElementById('panel-discussion-override').classList.toggle('active', e.target.checked);
+    });
+
+    document.getElementById('takehome').addEventListener('change', (e) => {
+      document.getElementById('panel-takehome').classList.toggle('active', e.target.checked);
+    });
+
+    document.getElementById('postformat').addEventListener('change', (e) => {
+      const isText = e.target.value === "1";
+      document.getElementById('group-postlength-text').style.display = isText ? "block" : "none";
+      document.getElementById('group-postlength-av').style.display = isText ? "none" : "block";
+    });
+
+    // Attach calculation triggers to all inputs
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      input.addEventListener('input', calculate);
+      input.addEventListener('change', calculate);
+    });
+
+    // Initial Calculation Run
+    calculate();
+  }
+
+  document.addEventListener('DOMContentLoaded', setupUI);
+</script>
+
+</body>
+</html>
