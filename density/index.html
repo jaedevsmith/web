@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5 Physics Animation</title>
+    <style>
+        body {
+            font-family: Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin-top: 50px;
+        }
+        canvas {
+            background-color: white;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="myCanvas" width="500" height="400"></canvas>
+    
+    <div class="controls">
+        <label for="sizeSlider">Box Size Scale: </label>
+        <input type="range" id="sizeSlider" min="10" max="100" value="30">
+    </div>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('sizeSlider');
+
+        // Physics variables similar to the original ActionScript
+        let box = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            velFactor: 0.99, // friction
+            color: '#FF5733'
+        };
+
+        function update() {
+            // Apply scale from slider
+            let currentSize = parseInt(slider.value);
+
+            // Apply velocity
+            box.x += box.vx;
+            box.y += box.vy;
+
+            // Basic boundary collision logic
+            if (box.x <= 0 || box.x + currentSize >= canvas.width) {
+                box.vx *= -1;
+                changeColor();
+            }
+            if (box.y <= 0 || box.y + currentSize >= canvas.height) {
+                box.vy *= -1;
+                changeColor();
+            }
+
+            // Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = box.color;
+            ctx.fillRect(box.x, box.y, currentSize, currentSize);
+
+            requestAnimationFrame(update);
+        }
+
+        // Simulating the setRGB logic
+        function changeColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            box.color = `rgb(${r},${g},${b})`;
+        }
+
+        update();
+    </script>
+</body>
+</html>
