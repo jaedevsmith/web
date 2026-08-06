@@ -3,85 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML5 Physics Animation</title>
+    <title>Density Interactive Simulation</title>
     <style>
         body {
             font-family: Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f0f0;
-            margin-top: 50px;
+            padding: 20px;
+        }
+        h2 { margin-bottom: 5px; }
+        .container {
+            display: flex;
+            gap: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .simulation-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         canvas {
-            background-color: white;
-            border: 2px solid #333;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #e9ecef;
+            border: 2px solid #495057;
+            margin-bottom: 20px;
         }
         .controls {
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .slider-group label {
+            font-weight: bold;
+            width: 100px;
+        }
+        .slider-labels {
+            font-size: 12px;
+            color: #666;
+            margin: 0 10px;
+        }
+        .graph-area {
+            display: flex;
+            align-items: flex-end;
+            gap: 30px;
+            height: 300px;
+            border-bottom: 2px solid #333;
+            border-left: 2px solid #333;
+            padding: 0 20px 0 10px;
+        }
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            width: 60px;
+        }
+        .bar {
+            width: 100%;
+            background-color: #007bff;
+            transition: height 0.1s ease;
+        }
+        .bar-mass { background-color: #dc3545; }
+        .bar-volume { background-color: #28a745; }
+        .bar-density { background-color: #6f42c1; }
+        
+        .bar-label {
+            margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="myCanvas" width="500" height="400"></canvas>
-    
-    <div class="controls">
-        <label for="sizeSlider">Box Size Scale: </label>
-        <input type="range" id="sizeSlider" min="10" max="100" value="30">
+    <h2>Density Simulation</h2>
+    <p>Adjust the sliders to see how Mass and Volume affect Density.</p>
+
+    <div class="container">
+        <!-- Visual Simulation -->
+        <div class="simulation-area">
+            <canvas id="simCanvas" width="300" height="300"></canvas>
+            
+            <div class="controls">
+                <div class="slider-group">
+                    <label>Volume</label>
+                    <span class="slider-labels">smaller</span>
+                    <input type="range" id="volumeSlider" min="50" max="250" value="150">
+                    <span class="slider-labels">larger</span>
+                </div>
+                <div class="slider-group">
+                    <label>Atom Mass</label>
+                    <span class="slider-labels">lighter</span>
+                    <input type="range" id="massSlider" min="10" max="100" value="50">
+                    <span class="slider-labels">heavier</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bar Graphs -->
+        <div class="graph-area">
+            <div class="bar-container">
+                <div class="bar bar-mass" id="barMass" style="height: 50%;"></div>
+                <div class="bar-label">Mass</div>
+            </div>
+            <div class="bar-container">
+                <div class="bar bar-volume" id="barVolume" style="height: 50%;"></div>
+                <div class="bar-label">Volume</div>
+            </div>
+            <div class="bar-container">
+                <div class="bar bar-density" id="barDensity" style="height: 50%;"></div>
+                <div class="bar-label">Density</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('myCanvas');
+        const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
-        const slider = document.getElementById('sizeSlider');
+        
+        const volSlider = document.getElementById('volumeSlider');
+        const massSlider = document.getElementById('massSlider');
+        
+        const barMass = document.getElementById('barMass');
+        const barVolume = document.getElementById('barVolume');
+        const barDensity = document.getElementById('barDensity');
 
-        // Physics variables similar to the original ActionScript
-        let box = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            velFactor: 0.99, // friction
-            color: '#FF5733'
-        };
+        // Create particles (atoms)
+        const numAtoms = 30;
+        let atoms = [];
+        for(let i = 0; i < numAtoms; i++) {
+            atoms.push({
+                x: Math.random() * 150,
+                y: Math.random() * 150,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4
+            });
+        }
 
-        function update() {
-            // Apply scale from slider
-            let currentSize = parseInt(slider.value);
+        function updateSimulation() {
+            // Get current values
+            let volume = parseInt(volSlider.value);
+            let atomMass = parseInt(massSlider.value);
+            
+            // Calculate total mass (atom mass * number of atoms)
+            let totalMass = atomMass * (numAtoms / 10); 
+            
+            // Calculate Density (Mass / Volume)
+            // Multiplied by 100 just to scale the bar graph nicely
+            let density = (totalMass / volume) * 100;
 
-            // Apply velocity
-            box.x += box.vx;
-            box.y += box.vy;
+            // Update Bar Graphs (capped at 100% height)
+            barMass.style.height = Math.min(totalMass, 100) + '%';
+            barVolume.style.height = Math.min((volume / 250) * 100, 100) + '%';
+            barDensity.style.height = Math.min(density, 100) + '%';
 
-            // Basic boundary collision logic
-            if (box.x <= 0 || box.x + currentSize >= canvas.width) {
-                box.vx *= -1;
-                changeColor();
-            }
-            if (box.y <= 0 || box.y + currentSize >= canvas.height) {
-                box.vy *= -1;
-                changeColor();
-            }
-
-            // Draw
+            // Visual Setup for Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = box.color;
-            ctx.fillRect(box.x, box.y, currentSize, currentSize);
+            
+            // Draw Container (Volume)
+            let boxSize = volume; 
+            let boxX = (canvas.width - boxSize) / 2;
+            let boxY = (canvas.height - boxSize) / 2;
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(boxX, boxY, boxSize, boxSize);
+            ctx.strokeStyle = "#333";
+            ctx.strokeRect(boxX, boxY, boxSize, boxSize);
 
-            requestAnimationFrame(update);
+            // Draw Atoms inside container
+            ctx.fillStyle = atomMass > 50 ? "#c0392b" : "#3498db"; // Color changes based on mass
+            let atomRadius = 3 + (atomMass / 20); // Size changes slightly based on mass
+
+            atoms.forEach(atom => {
+                // Move atoms
+                atom.x += atom.vx;
+                atom.y += atom.vy;
+
+                // Bounce off walls of the dynamically sizing box
+                if (atom.x - atomRadius < 0) { atom.x = atomRadius; atom.vx *= -1; }
+                if (atom.x + atomRadius > boxSize) { atom.x = boxSize - atomRadius; atom.vx *= -1; }
+                if (atom.y - atomRadius < 0) { atom.y = atomRadius; atom.vy *= -1; }
+                if (atom.y + atomRadius > boxSize) { atom.y = boxSize - atomRadius; atom.vy *= -1; }
+
+                // Draw atom relative to the box position
+                ctx.beginPath();
+                ctx.arc(boxX + atom.x, boxY + atom.y, atomRadius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(updateSimulation);
         }
 
-        // Simulating the setRGB logic
-        function changeColor() {
-            const r = Math.floor(Math.random() * 256);
-            const g = Math.floor(Math.random() * 256);
-            const b = Math.floor(Math.random() * 256);
-            box.color = `rgb(${r},${g},${b})`;
-        }
-
-        update();
+        // Start animation loop
+        updateSimulation();
     </script>
 </body>
 </html>
