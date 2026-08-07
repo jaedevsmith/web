@@ -111,7 +111,6 @@
             gap: 10px;
         }
 
-        /* Custom Slider Styling */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -209,7 +208,8 @@
                     </div>
                     <div class="range-wrapper">
                         <span class="slider-labels">smaller</span>
-                        <input type="range" id="volumeSlider" min="50" max="250" value="150">
+                        <!-- Both sliders now use a synchronized 10-100 scale -->
+                        <input type="range" id="volumeSlider" min="10" max="100" value="50">
                         <span class="slider-labels">larger</span>
                     </div>
                 </div>
@@ -258,71 +258,63 @@
         const barVolume = document.getElementById('barVolume');
         const barDensity = document.getElementById('barDensity');
 
-        // Extract colors from CSS for JS use
         const usaBlue = '#00205B';
         const usaRed = '#BA0C2F';
-        const usaRedDark = '#8f0a24';
-        const borderCol = '#e2e5ee';
 
-        // Create particles (atoms)
         const numAtoms = 30;
         let atoms = [];
+        
         for(let i = 0; i < numAtoms; i++) {
             atoms.push({
-                x: Math.random() * 150,
-                y: Math.random() * 150,
+                x: Math.random() * 100,
+                y: Math.random() * 100,
                 vx: (Math.random() - 0.5) * 4,
                 vy: (Math.random() - 0.5) * 4
             });
         }
 
         function updateSimulation() {
-            // Get current values
-            let volume = parseInt(volSlider.value);
-            let atomMass = parseInt(massSlider.value);
+            // Read synchronized 10-100 values
+            let volumeVal = parseInt(volSlider.value);
+            let massVal = parseInt(massSlider.value);
             
-            // Calculate total mass (atom mass * number of atoms)
-            let totalMass = atomMass * (numAtoms / 10); 
-            
-            // Calculate Density (Mass / Volume)
-            // Multiplied by 100 just to scale the bar graph nicely
-            let density = (totalMass / volume) * 100;
+            // Density ratio scaled so that equal mass/volume puts density at 50%
+            let densityVal = (massVal / volumeVal) * 50;
 
-            // Update Bar Graphs (capped at 100% height)
-            barMass.style.height = Math.min(totalMass, 100) + '%';
-            barVolume.style.height = Math.min((volume / 250) * 100, 100) + '%';
-            barDensity.style.height = Math.min(density, 100) + '%';
+            // Update Bar Graphs using direct percentage values
+            barMass.style.height = Math.min(massVal, 100) + '%';
+            barVolume.style.height = Math.min(volumeVal, 100) + '%';
+            barDensity.style.height = Math.min(densityVal, 100) + '%';
 
-            // Visual Setup for Canvas
+            // Clear Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Container (Volume)
-            let boxSize = volume; 
+            // Map the 10-100 slider value to visual box size on the canvas (min 65px, max 200px)
+            let boxSize = 50 + (volumeVal * 1.5); 
             let boxX = (canvas.width - boxSize) / 2;
             let boxY = (canvas.height - boxSize) / 2;
             
+            // Draw Container
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(boxX, boxY, boxSize, boxSize);
             ctx.strokeStyle = usaBlue;
             ctx.lineWidth = 2;
             ctx.strokeRect(boxX, boxY, boxSize, boxSize);
 
-            // Draw Atoms inside container - Change color based on mass
-            ctx.fillStyle = atomMass > 50 ? usaRed : usaBlue; 
-            let atomRadius = 3 + (atomMass / 20); 
+            // Draw Atoms
+            ctx.fillStyle = massVal > 50 ? usaRed : usaBlue; 
+            // Map the 10-100 mass slider to visual atom radius (min ~3.5px, max 8px)
+            let atomRadius = 3 + (massVal / 20); 
 
             atoms.forEach(atom => {
-                // Move atoms
                 atom.x += atom.vx;
                 atom.y += atom.vy;
 
-                // Bounce off walls of the dynamically sizing box
                 if (atom.x - atomRadius < 0) { atom.x = atomRadius; atom.vx *= -1; }
                 if (atom.x + atomRadius > boxSize) { atom.x = boxSize - atomRadius; atom.vx *= -1; }
                 if (atom.y - atomRadius < 0) { atom.y = atomRadius; atom.vy *= -1; }
                 if (atom.y + atomRadius > boxSize) { atom.y = boxSize - atomRadius; atom.vy *= -1; }
 
-                // Draw atom relative to the box position
                 ctx.beginPath();
                 ctx.arc(boxX + atom.x, boxY + atom.y, atomRadius, 0, Math.PI * 2);
                 ctx.fill();
@@ -331,7 +323,6 @@
             requestAnimationFrame(updateSimulation);
         }
 
-        // Start animation loop
         updateSimulation();
     </script>
 </body>
