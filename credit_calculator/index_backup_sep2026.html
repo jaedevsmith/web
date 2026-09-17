@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Credit Hours Calculator</title>
-    <!-- SheetJS Library for Native Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
       body { 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -127,7 +125,7 @@
       }
       #exportBtn:hover { background-color: #0b8043; }
       #exportBtn:disabled { background-color: #999; cursor: not-allowed; }
-      #exportMsg { display: block; margin-top: 15px; font-size: 14px; line-height: 1.6; }
+      #exportMsg { display: block; margin-top: 10px; font-size: 14px; font-weight: bold; }
     </style>
   </head>
   <body>
@@ -251,7 +249,7 @@
 
       <!-- Export Button Area -->
       <div class="action-row">
-        <button id="exportBtn" onclick="exportData()">Download Excel Export</button>
+        <button id="exportBtn" onclick="exportData()">Download CSV Export</button>
         <span id="exportMsg"></span>
       </div>
 
@@ -296,6 +294,7 @@
         }
       };
 
+      // Standard mapping: Every hybrid now uses consistent boxes & options
       const modalityMapping = {
         'campusTraditional': ['inPerson', 'asyncDist'],
         'campusHybrid': ['inPerson', 'asyncDist'], 
@@ -323,7 +322,6 @@
 
       function onInputChange() {
         calculateTotals();
-        document.getElementById("exportMsg").innerText = ""; // Clear errors on input
       }
 
       function updateView() {
@@ -331,6 +329,7 @@
         const selectedModality = modalitySelect.value;
         const activeCategories = modalityMapping[selectedModality] || [];
 
+        // 1. Show/Hide Category Cards
         ['inPerson', 'syncDist', 'asyncDist'].forEach(cat => {
           const card = document.getElementById(`card-${cat}`);
           if (activeCategories.includes(cat)) {
@@ -341,6 +340,7 @@
           }
         });
 
+        // 2. Campus Traditional Rule: Strip instructional rows from Async box, leaving only Independent Learning
         const isTraditional = (selectedModality === 'campusTraditional');
         document.querySelectorAll('#card-asyncDist .async-inst-group').forEach(el => {
           el.style.display = isTraditional ? 'none' : 'flex';
@@ -351,6 +351,7 @@
         genRow.style.paddingTop = isTraditional ? '0' : '10px';
         genRow.style.marginTop = isTraditional ? '0' : '10px';
 
+        // 3. Populate and Show Modality Overview Box
         const infoBox = document.getElementById("modalityInfoBox");
         if (selectedModality && modalityDetails[selectedModality]) {
           const details = modalityDetails[selectedModality];
@@ -367,6 +368,7 @@
         document.getElementById("exportMsg").innerText = "";
       }
 
+      // Automatically defaults Independent Learning to 30, 60, 90, or 120 based on credits
       function applyDefaultIndependent(forceReset) {
         const credits = parseInt(document.getElementById("creditsSelect").value);
         const targetInd = credits * 30;
@@ -377,13 +379,14 @@
         }
       }
 
+      // Enforces 51% In-Person Floor for Campus Hybrid
       function enforceFloorLocks() {
         const selectedModality = document.getElementById("modalitySelect").value;
         const credits = parseInt(document.getElementById("creditsSelect").value);
         const targetInst = credits * 15;
         
         if (selectedModality === 'campusHybrid') {
-          const minInPerson = Math.ceil(targetInst * 0.51); 
+          const minInPerson = Math.ceil(targetInst * 0.51); // 51% floor
           let currentInPersonTotal = 0;
           document.querySelectorAll('#card-inPerson .inst-input').forEach(inp => {
             currentInPersonTotal += parseFloat(inp.value) || 0;
@@ -424,6 +427,7 @@
         document.getElementById("totalInst").innerText = currentInst;
         document.getElementById("totalInd").innerText = currentInd;
 
+        // Instructional Target Badge
         const statusInst = document.getElementById("statusInst");
         if (currentInst >= targetInst) {
           statusInst.className = "status pass";
@@ -433,6 +437,7 @@
           statusInst.innerText = "Target: " + targetInst + " not met";
         }
 
+        // Independent Target Badge
         const statusInd = document.getElementById("statusInd");
         if (currentInd >= targetInd) {
           statusInd.className = "status pass";
@@ -442,6 +447,7 @@
           statusInd.innerText = "Target: " + targetInd + " not met";
         }
 
+        // --- DYNAMIC POLICY FLOOR CHECKS & INDICATORS ---
         const floorBox = document.getElementById("policyFloorBox");
         const floorContent = document.getElementById("floorContent");
         let floorHTML = "";
@@ -498,7 +504,7 @@
             </div>`;
         }
         else if (selectedModality === 'remoteScheduled') {
-          const minSync = targetInst; 
+          const minSync = targetInst; // 15 hrs per credit = 100% of instructional total
           let currentSync = 0;
           document.querySelectorAll('#card-syncDist .sync-inst-input').forEach(inp => currentSync += parseFloat(inp.value) || 0);
           
@@ -526,6 +532,7 @@
         }
       }
 
+      // Standalone CSV Generator & File Downloader (Fixed for bold label tags!)
       function exportData() {
         const modalitySelect = document.getElementById("modalitySelect");
         if (!modalitySelect.value) {
@@ -533,67 +540,17 @@
           return;
         }
 
-        const msg = document.getElementById("exportMsg");
-        const credits = parseInt(document.getElementById("creditsSelect").value);
-        const targetInst = credits * 15;
-        const targetInd = credits * 30;
-        
-        let currentInst = parseFloat(document.getElementById("totalInst").innerText);
-        let currentInd = parseFloat(document.getElementById("totalInd").innerText);
-        const selectedModality = modalitySelect.value;
-
-        // ==========================================
-        // EXPORT VALIDATION (BLOCKS DOWNLOAD IF FAILED)
-        // ==========================================
-        let errors = [];
-        
-        if (currentInst < targetInst) errors.push(`Instructional Total must be at least ${targetInst} hours.`);
-        if (currentInd < targetInd) errors.push(`Independent Total must be at least ${targetInd} hours.`);
-
-        if (selectedModality === 'remoteScheduled') {
-           let currentSync = 0;
-           document.querySelectorAll('#card-syncDist .sync-inst-input').forEach(inp => currentSync += parseFloat(inp.value) || 0);
-           if (currentSync < targetInst) {
-               errors.push(`Remote Scheduled requires 100% of instructional time (${targetInst} hrs) to be Synchronous Distance.`);
-           }
-        }
-        else if (selectedModality === 'remoteHybrid') {
-           const minAsync = (targetInst * 0.30);
-           let currentAsyncInst = 0;
-           document.querySelectorAll('#card-asyncDist .async-inst-input').forEach(inp => currentAsyncInst += parseFloat(inp.value) || 0);
-           if (currentAsyncInst < minAsync) {
-               errors.push(`Remote Hybrid requires at least 30% (${minAsync.toFixed(1)} hrs) Asynchronous Distance instruction.`);
-           }
-        }
-        else if (selectedModality === 'integratedHybrid') {
-           const minInPerson = (targetInst * 0.15);
-           const minAsync = (targetInst * 0.30);
-           let currentInPerson = 0;
-           document.querySelectorAll('#card-inPerson .inst-input').forEach(inp => currentInPerson += parseFloat(inp.value) || 0);
-           let currentAsyncInst = 0;
-           document.querySelectorAll('#card-asyncDist .async-inst-input').forEach(inp => currentAsyncInst += parseFloat(inp.value) || 0);
-           
-           if (currentInPerson < minInPerson) errors.push(`Integrated Hybrid requires at least 15% (${minInPerson.toFixed(1)} hrs) In-Person instruction.`);
-           if (currentAsyncInst < minAsync) errors.push(`Integrated Hybrid requires at least 30% (${minAsync.toFixed(1)} hrs) Asynchronous Distance instruction.`);
-        }
-
-        if (errors.length > 0) {
-           msg.style.color = "#721c24";
-           msg.innerHTML = "<strong>❌ Please fix the following before exporting:</strong><br>• " + errors.join("<br>• ");
-           return;
-        }
-
-        // ==========================================
-        // SHEETJS XLSX GENERATION
-        // ==========================================
         const btn = document.getElementById("exportBtn");
-        btn.innerText = "Generating Excel...";
+        const msg = document.getElementById("exportMsg");
+        
+        btn.innerText = "Generating CSV...";
         btn.disabled = true;
         msg.innerText = "";
 
         let breakdownArr = [];
         document.querySelectorAll('.category-card.active .input-group').forEach(group => {
           if (group.style.display !== 'none') {
+            // Safely clone label and remove tooltip element to grab clean activity label text
             let labelEl = group.querySelector('label').cloneNode(true);
             let tooltip = labelEl.querySelector('.tooltip-container');
             if (tooltip) tooltip.remove();
@@ -607,37 +564,45 @@
         });
 
         const modality = modalitySelect.options[modalitySelect.selectedIndex].text;
+        const credits = document.getElementById("creditsSelect").value;
         const instTotal = document.getElementById("totalInst").innerText;
         const indTotal = document.getElementById("totalInd").innerText;
         const details = breakdownArr.length > 0 ? breakdownArr.join(" | ") : "No hours entered";
 
+        const headers = ["Course Modality", "Target Credits", "Instructional Total (A)", "Independent Total (B)", "Activity Breakdown"];
+        const row = [
+          `"${modality}"`,
+          `"${credits}"`,
+          `"${instTotal}"`,
+          `"${indTotal}"`,
+          `"${details.replace(/"/g, '""')}"`
+        ];
+
+        const csvContent = headers.join(",") + "\n" + row.join(",");
+
         try {
-          const ws_data = [
-            ["Course Modality", "Target Credits", "Instructional Total (A)", "Independent Total (B)", "Activity Breakdown"],
-            [modality, credits, instTotal, indTotal, details]
-          ];
-          
-          const wb = XLSX.utils.book_new();
-          const ws = XLSX.utils.aoa_to_sheet(ws_data);
-          
-          // Adjust column widths for readability
-          ws['!cols'] = [{wch: 25}, {wch: 15}, {wch: 22}, {wch: 22}, {wch: 80}];
-          
-          XLSX.utils.book_append_sheet(wb, ws, "Credit Hours");
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
           
           const cleanModalityName = modality.replace(/[^a-zA-Z0-9]/g, "_");
-          XLSX.writeFile(wb, `Credit_Hours_${cleanModalityName}.xlsx`);
+          link.setAttribute("href", url);
+          link.setAttribute("download", `Credit_Hours_${cleanModalityName}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
 
-          btn.innerText = "Download Excel Export";
+          btn.innerText = "Download CSV Export";
           btn.disabled = false;
           msg.style.color = "#155724";
-          msg.innerHTML = "<strong>✓ Excel (.xlsx) downloaded successfully!</strong>";
-          setTimeout(() => { msg.innerHTML = ""; }, 5000);
+          msg.innerText = "✓ CSV downloaded successfully!";
+          setTimeout(() => { msg.innerText = ""; }, 5000);
         } catch (err) {
-          btn.innerText = "Download Excel Export";
+          btn.innerText = "Download CSV Export";
           btn.disabled = false;
           msg.style.color = "#721c24";
-          msg.innerHTML = "<strong>Error exporting file:</strong> " + err.message;
+          msg.innerText = "Error exporting file: " + err.message;
         }
       }
     </script>
