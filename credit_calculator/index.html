@@ -216,7 +216,7 @@
       </div>
 
       <!-- STANDALONE INDEPENDENT LEARNING BOX -->
-      <div id="card-independent" class="category-card" style="margin-top: 20px; padding: 20px;">
+      <div id="card-independent" class="category-card" style="margin-top: 20px; background: #e8f0fe; border-color: #1a73e8; padding: 20px;">
         <h3 style="margin-bottom: 15px; justify-content: center; text-align: center; border-bottom: none;">
           Independent Learning Activity Hours 
           <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-assigned activities completed independently by students to prepare for, reinforce, extend, or demonstrate learning.</span></span>
@@ -349,16 +349,6 @@
           }
         });
 
-        const isTraditional = (selectedModality === 'campusTraditional');
-        document.querySelectorAll('#card-asyncDist .async-inst-group').forEach(el => {
-          el.style.display = isTraditional ? 'none' : 'flex';
-          if (isTraditional) el.querySelector('input').value = 0;
-        });
-        const genRow = document.getElementById('generalIndRow');
-        genRow.style.borderTop = isTraditional ? 'none' : '1px dashed #ccc';
-        genRow.style.paddingTop = isTraditional ? '0' : '10px';
-        genRow.style.marginTop = isTraditional ? '0' : '10px';
-
         // Always show the standalone Independent Learning card if a modality is selected
         const indCard = document.getElementById('card-independent');
         if (selectedModality) {
@@ -433,7 +423,7 @@
         });
 
         document.querySelectorAll('.category-card.active .ind-input').forEach(input => {
-          if (input.closest('.input-group') && input.closest('.input-group').style.display !== 'none') {
+          if (input.closest('.input-group').style.display !== 'none') {
             currentInd += parseFloat(input.value) || 0;
           }
         });
