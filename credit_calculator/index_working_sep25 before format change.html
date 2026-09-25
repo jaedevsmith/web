@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Credit Hours Calculator</title>
+    <title>Interactive Credit Hours Estimator</title>
     <!-- SheetJS Library for Native Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -133,7 +133,7 @@
   <body>
 
     <div class="calculator-container">
-      <h2>Interactive Credit Hours Estimator</h2>
+      <h2>Interactive Credit Hours Calculator</h2>
       
       <div class="header-controls">
         <div class="control-group">
@@ -163,7 +163,7 @@
       <!-- Categories Container -->
       <div class="category-grid">
         
-        <!-- IN PERSON ACTIVITIES -->
+        <!-- IN PERSON ACTIVITIES (No Independent Learning) -->
         <div id="card-inPerson" class="category-card">
           <h3>In-Person Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities conducted physically face-to-face in a shared campus classroom or facility.</span></span></h3>
           <div class="input-group">
@@ -180,7 +180,7 @@
           </div>
         </div>
 
-        <!-- SYNCHRONOUS DISTANCE ACTIVITIES -->
+        <!-- SYNCHRONOUS DISTANCE ACTIVITIES (No Independent Learning) -->
         <div id="card-syncDist" class="category-card">
           <h3>Sync Distance Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live web-conferencing or remote sessions where instructor and students meet online at a scheduled time.</span></span></h3>
           <div class="input-group">
@@ -197,7 +197,7 @@
           </div>
         </div>
 
-        <!-- ASYNCHRONOUS DISTANCE ACTIVITIES -->
+        <!-- ASYNCHRONOUS DISTANCE ACTIVITIES (Includes Independent Learning) -->
         <div id="card-asyncDist" class="category-card">
           <h3>Async Distance Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Online instructional activities completed flexibly within timeframes without scheduled real-time meetings.</span></span></h3>
           <div class="input-group async-inst-group">
@@ -212,21 +212,14 @@
             <label>Assessment Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
+          
+          <!-- Independent Learning Row (The ONLY location for out-of-class study across all modalities) -->
+          <div class="input-group" id="generalIndRow" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
+            <label><strong>Independent Learning Activity Hours</strong> <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-assigned activities completed independently by students to prepare for, reinforce, extend, or demonstrate learning.</span></span></label>
+            <input type="number" class="calc-input ind-input" id="generalIndInput" min="0" value="0" oninput="onInputChange()">
+          </div>
         </div>
-      </div>
 
-      <!-- STANDALONE INDEPENDENT LEARNING BOX -->
-      <div id="card-independent" class="category-card" style="margin-top: 20px; background: #e8f0fe; border-color: #1a73e8; padding: 20px;">
-        <h3 style="margin-bottom: 15px; justify-content: center; text-align: center; border-bottom: none;">
-          Independent Learning Activity Hours 
-          <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-assigned activities completed independently by students to prepare for, reinforce, extend, or demonstrate learning.</span></span>
-        </h3>
-        <div class="input-group" style="justify-content: center;">
-          <!-- Hidden label ensures the Excel export grabs the exact correct title text -->
-          <label style="display: none;">Independent Learning Activity Hours</label>
-          <span style="font-weight: bold; margin-right: 15px; font-size: 14px;">Total Independent Hours:</span>
-          <input type="number" class="calc-input ind-input" id="generalIndInput" min="0" value="0" oninput="onInputChange()" style="width: 150px; text-align: center;">
-        </div>
       </div>
 
       <!-- Policy Floor Indicator Box -->
@@ -303,9 +296,8 @@
         }
       };
 
-      // Removed asyncDist from campusTraditional since it no longer houses the independent learning row
       const modalityMapping = {
-        'campusTraditional': ['inPerson'],
+        'campusTraditional': ['inPerson', 'asyncDist'],
         'campusHybrid': ['inPerson', 'asyncDist'], 
         'multiAccess': ['inPerson', 'syncDist', 'asyncDist'],
         'remoteScheduled': ['syncDist', 'asyncDist'],
@@ -349,14 +341,15 @@
           }
         });
 
-        // Always show the standalone Independent Learning card if a modality is selected
-        const indCard = document.getElementById('card-independent');
-        if (selectedModality) {
-            indCard.classList.add('active');
-        } else {
-            indCard.classList.remove('active');
-            document.getElementById('generalIndInput').value = 0;
-        }
+        const isTraditional = (selectedModality === 'campusTraditional');
+        document.querySelectorAll('#card-asyncDist .async-inst-group').forEach(el => {
+          el.style.display = isTraditional ? 'none' : 'flex';
+          if (isTraditional) el.querySelector('input').value = 0;
+        });
+        const genRow = document.getElementById('generalIndRow');
+        genRow.style.borderTop = isTraditional ? 'none' : '1px dashed #ccc';
+        genRow.style.paddingTop = isTraditional ? '0' : '10px';
+        genRow.style.marginTop = isTraditional ? '0' : '10px';
 
         const infoBox = document.getElementById("modalityInfoBox");
         if (selectedModality && modalityDetails[selectedModality]) {
