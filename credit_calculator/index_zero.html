@@ -366,23 +366,32 @@
         const selectedModality = modalitySelect.value;
         const activeCategories = modalityMapping[selectedModality] || [];
 
+        const mainGrid = document.getElementById('mainCategoryGrid');
+        const indCard = document.getElementById('card-independent');
+        const totalsBoard = document.getElementById('totalsBoard');
+        const policyBox = document.getElementById('policyFloorBox');
+        const infoBox = document.getElementById('modalityInfoBox');
+        const zeroBox = document.getElementById('zeroCreditBox');
+
         // ZERO CREDIT MODE TOGGLE
         if (credits === 0) {
-            document.getElementById('mainCategoryGrid').style.display = 'none';
-            document.getElementById('card-independent').style.display = 'none';
-            document.getElementById('totalsBoard').style.display = 'none';
-            document.getElementById('policyFloorBox').style.display = 'none';
-            document.getElementById('modalityInfoBox').style.display = 'none';
-            document.getElementById('zeroCreditBox').style.display = 'block';
+            mainGrid.style.display = 'none';
+            indCard.style.display = 'none';
+            totalsBoard.style.display = 'none';
+            policyBox.style.display = 'none';
+            infoBox.style.display = 'none';
+            zeroBox.style.display = 'block';
             document.getElementById("exportMsg").innerText = "";
-            return; // Exit early so standard panels don't render
+            return; // Exit early
         } else {
-            document.getElementById('mainCategoryGrid').style.display = 'grid';
-            document.getElementById('totalsBoard').style.display = 'block';
-            document.getElementById('zeroCreditBox').style.display = 'none';
+            // Restore default displays so CSS classes take over again
+            mainGrid.style.display = 'grid';
+            indCard.style.display = '';
+            totalsBoard.style.display = 'block';
+            infoBox.style.display = '';
+            zeroBox.style.display = 'none';
         }
 
-        // Standard Modality View Logic
         ['inPerson', 'syncDist', 'asyncDist'].forEach(cat => {
           const card = document.getElementById(`card-${cat}`);
           if (activeCategories.includes(cat)) {
@@ -393,13 +402,6 @@
           }
         });
 
-        const isTraditional = (selectedModality === 'campusTraditional');
-        document.querySelectorAll('#card-asyncDist .async-inst-group').forEach(el => {
-          el.style.display = isTraditional ? 'none' : 'flex';
-          if (isTraditional) el.querySelector('input').value = 0;
-        });
-
-        const indCard = document.getElementById('card-independent');
         if (selectedModality) {
             indCard.classList.add('active');
         } else {
@@ -407,7 +409,6 @@
             document.getElementById('generalIndInput').value = 0;
         }
 
-        const infoBox = document.getElementById("modalityInfoBox");
         if (selectedModality && modalityDetails[selectedModality]) {
           const details = modalityDetails[selectedModality];
           const displayName = modalitySelect.options[modalitySelect.selectedIndex].text;
@@ -425,7 +426,7 @@
 
       function applyDefaultIndependent(forceReset) {
         const credits = parseInt(document.getElementById("creditsSelect").value);
-        if (credits === 0) return; // Skip if 0 credits
+        if (credits === 0) return; 
 
         const targetInd = credits * 30;
         const genInput = document.getElementById("generalIndInput");
@@ -437,7 +438,7 @@
 
       function enforceFloorLocks() {
         const credits = parseInt(document.getElementById("creditsSelect").value);
-        if (credits === 0) return; // Skip validation for 0 credits
+        if (credits === 0) return; 
 
         const selectedModality = document.getElementById("modalitySelect").value;
         const targetInst = credits * 15;
@@ -462,7 +463,7 @@
 
       function calculateTotals() {
         const credits = parseInt(document.getElementById("creditsSelect").value);
-        if (credits === 0) return; // Skip calculation for 0 credits
+        if (credits === 0) return; 
 
         const targetInst = credits * 15;
         const targetInd = credits * 30;
@@ -604,13 +605,11 @@
         let details = "";
         let errors = [];
 
-        // ZERO CREDIT EXPORT LOGIC
         if (credits === 0) {
             instTotal = "N/A";
             indTotal = "N/A";
             details = "Zero-Credit Course (Pass/Fail) - Research/Internship/Thesis Prep";
         } else {
-            // STANDARD EXPORT VALIDATION
             const targetInst = credits * 15;
             const targetInd = credits * 30;
             
@@ -656,7 +655,6 @@
                return;
             }
 
-            // Build Activity Breakdown for Standard Export
             let breakdownArr = [];
             document.querySelectorAll('.category-card.active .input-group').forEach(group => {
               if (group.style.display !== 'none') {
@@ -674,9 +672,6 @@
             details = breakdownArr.length > 0 ? breakdownArr.join(" | ") : "No hours entered";
         }
 
-        // ==========================================
-        // SHEETJS XLSX GENERATION
-        // ==========================================
         const btn = document.getElementById("exportBtn");
         btn.innerText = "Generating Excel...";
         btn.disabled = true;
