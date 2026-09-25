@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Credit Hour Estimator</title>
+    <title>Interactive Credit Hours Estimator</title>
     <!-- SheetJS Library for Native Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -133,7 +133,7 @@
   <body>
 
     <div class="calculator-container">
-      <h2>Interactive Credit Hours Estimator</h2>
+      <h2>Interactive Credit Hours Calculator</h2>
       
       <div class="header-controls">
         <div class="control-group">
@@ -165,57 +165,57 @@
         
         <!-- IN PERSON ACTIVITIES (No Independent Learning) -->
         <div id="card-inPerson" class="category-card">
-          <h3>In-Person Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities conducted physically face-to-face in a shared campus classroom or facility.</span></span></h3>
+          <h3>In-Person Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities conducted physically face-to-face in a shared campus classroom or facility.</span></span></h3>
           <div class="input-group">
-            <label>Structured Instructional Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
+            <label>Structured Instructional Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
             <input type="number" class="calc-input inst-input" id="inPersonDirect" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
           </div>
           <div class="input-group">
-            <label>Interactive and Applied Learning Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
+            <label>Interactive and Applied Learning Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
             <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
           </div>
           <div class="input-group">
-            <label>Assessment Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
+            <label>Assessment Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
             <input type="number" class="calc-input inst-input" min="0" value="0" oninput="onInputChange()" onblur="enforceFloorLocks()">
           </div>
         </div>
 
         <!-- SYNCHRONOUS DISTANCE ACTIVITIES (No Independent Learning) -->
         <div id="card-syncDist" class="category-card">
-          <h3>Sync Distance Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live web-conferencing or remote sessions where instructor and students meet online at a scheduled time.</span></span></h3>
+          <h3>Sync Distance Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Live web-conferencing or remote sessions where instructor and students meet online at a scheduled time.</span></span></h3>
           <div class="input-group">
-            <label>Structured Instructional Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
+            <label>Structured Instructional Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
             <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group">
-            <label>Interactive and Applied Learning Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
+            <label>Interactive and Applied Learning Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
             <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group">
-            <label>Assessment Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
+            <label>Assessment Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
             <input type="number" class="calc-input inst-input sync-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
         </div>
 
         <!-- ASYNCHRONOUS DISTANCE ACTIVITIES (Includes Independent Learning) -->
         <div id="card-asyncDist" class="category-card">
-          <h3>Async Distance Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Online instructional activities completed flexibly within timeframes without scheduled real-time meetings.</span></span></h3>
+          <h3>Async Distance Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Online instructional activities completed flexibly within timeframes without scheduled real-time meetings.</span></span></h3>
           <div class="input-group async-inst-group">
-            <label>Structured Instructional Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
+            <label>Structured Instructional Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-designed and facilitated activities that provide instruction, introduce concepts, demonstrate skills, or guide student learning. These activities may occur in person, online, synchronously, or asynchronously.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group async-inst-group">
-            <label>Interactive and Applied Learning Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
+            <label>Interactive and Applied Learning Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities that require students to actively engage with content, peers, instructors, patients, clients, or community partners to apply knowledge and develop skills.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           <div class="input-group async-inst-group">
-            <label>Assessment Activities <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
+            <label>Assessment Activity Hours <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Activities designed to evaluate, measure, and provide feedback on student learning, knowledge, skills, competencies, and achievement of course outcomes.</span></span></label>
             <input type="number" class="calc-input inst-input async-inst-input" min="0" value="0" oninput="onInputChange()">
           </div>
           
           <!-- Independent Learning Row (The ONLY location for out-of-class study across all modalities) -->
           <div class="input-group" id="generalIndRow" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
-            <label><strong>Independent Learning Activities</strong> <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-assigned activities completed independently by students to prepare for, reinforce, extend, or demonstrate learning.</span></span></label>
+            <label><strong>Independent Learning Activity Hours</strong> <span class="tooltip-container">ⓘ<span class="tooltip-text">Policy Definition: Faculty-assigned activities completed independently by students to prepare for, reinforce, extend, or demonstrate learning.</span></span></label>
             <input type="number" class="calc-input ind-input" id="generalIndInput" min="0" value="0" oninput="onInputChange()">
           </div>
         </div>
