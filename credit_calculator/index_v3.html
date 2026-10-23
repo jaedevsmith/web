@@ -346,7 +346,6 @@
         margin: 6px 0 2px;
       }
       #totalInd { color: var(--sky); }
-      .totals-board > div:last-child { grid-column: 1 / -1; }
 
       .status {
         font-size: 13px; padding: 5px 14px; border-radius: 999px;
@@ -497,6 +496,8 @@
             <option value="8">8 Credits (120 Inst / 240 Ind)</option>
             <option value="9">9 Credits (135 Inst / 270 Ind)</option>
             <option value="10">10 Credits (150 Inst / 300 Ind)</option>
+            <option value="11">11 Credits (165 Inst / 330 Ind)</option>
+            <option value="12">12 Credits (180 Inst / 360 Ind)</option>
           </select>
         </div>
       </div>
@@ -584,9 +585,6 @@
           Independent Total (B): <span id="totalInd">0</span> hours
           <span id="statusInd" class="status fail">Target not met</span>
         </div>
-        <div>
-          <span class="reset-link" onclick="applyDefaultIndependent(true)">⚡ Reset Independent Hours to Credit Default (<span id="defaultIndText">90</span> hrs)</span>
-        </div>
       </div>
 
       <!-- Modality Info Box -->
@@ -670,7 +668,8 @@
 
       function onCreditsChange() {
         const credits = parseInt(document.getElementById("creditsSelect").value);
-        document.getElementById("defaultIndText").innerText = credits * 30;
+        const defaultIndText = document.getElementById("defaultIndText");
+        if (defaultIndText) defaultIndText.innerText = credits * 30;
         applyDefaultIndependent(true);
         enforceFloorLocks();
         calculateTotals();
