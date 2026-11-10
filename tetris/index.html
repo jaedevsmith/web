@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tetris Neo - Modern Arcade Tetris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stars-bg"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="game-wrapper">
+    <header class="game-header">
+      <div class="logo-container">
+        <h1 class="logo-text">TETRIS<span class="logo-accent">NEO</span></h1>
+        <div class="tagline">CYBER ARCADE EDITION</div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-music" class="icon-btn" title="Toggle Music" aria-label="Toggle Music">
+          <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+          </svg>
+          <span class="btn-label">BGM</span>
+        </button>
+        <button id="btn-sound" class="icon-btn" title="Toggle Sound FX" aria-label="Toggle Sound Effects">
+          <svg class="icon sound-on-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+          <svg class="icon sound-off-icon hidden" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+          <span class="btn-label">SFX</span>
+        </button>
+        <button id="btn-pause" class="icon-btn" title="Pause Game (P/Esc)" aria-label="Pause Game">
+          <svg class="icon pause-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+          <svg class="icon play-icon hidden" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M8 5v14l11-7z"/>
+          </svg>
+          <span class="btn-label">PAUSE</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="game-container">
+      <!-- Left Column: Hold & Stats -->
+      <aside class="panel side-panel left-panel">
+        <div class="panel-box hold-box">
+          <h2 class="panel-title">HOLD</h2>
+          <div class="canvas-box">
+            <canvas id="hold-canvas" width="120" height="120"></canvas>
+          </div>
+          <div class="panel-hint">KEY: C / SHIFT</div>
+        </div>
+
+        <div class="panel-box stats-box">
+          <h2 class="panel-title">STATS</h2>
+          <div class="stat-item">
+            <span class="stat-label">SCORE</span>
+            <span id="score-display" class="stat-val highlight">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">HIGH SCORE</span>
+            <span id="high-score-display" class="stat-val">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LEVEL</span>
+            <span id="level-display" class="stat-val">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LINES</span>
+            <span id="lines-display" class="stat-val">0</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Column: Primary Playfield -->
+      <section class="main-board-container">
+        <div class="board-frame" id="board-frame">
+          <canvas id="tetris-canvas" width="300" height="600"></canvas>
+          
+          <!-- Countdown / Floating Overlay -->
+          <div id="countdown-overlay" class="game-overlay hidden">
+            <div id="countdown-text" class="countdown-bounce">3</div>
+          </div>
+
+          <!-- Pause Overlay -->
+          <div id="pause-overlay" class="game-overlay hidden">
+            <div class="modal-card">
+              <h2>GAME PAUSED</h2>
+              <p>Press <b>P</b>, <b>ESC</b> or Resume to continue</p>
+              <button id="btn-resume" class="arcade-btn">RESUME</button>
+              <button id="btn-restart-pause" class="arcade-btn btn-secondary">RESTART</button>
+            </div>
+          </div>
+
+          <!-- Game Over Overlay -->
+          <div id="gameover-overlay" class="game-overlay hidden">
+            <div class="modal-card gameover-card">
+              <h2 class="danger-text">GAME OVER</h2>
+              <div class="final-score-box">
+                <div class="final-label">FINAL SCORE</div>
+                <div id="final-score" class="final-value">0</div>
+                <div id="new-high-badge" class="high-badge hidden">★ NEW HIGH SCORE! ★</div>
+              </div>
+              <div class="stats-summary">
+                <div><span>Level:</span> <strong id="final-level">1</strong></div>
+                <div><span>Lines:</span> <strong id="final-lines">0</strong></div>
+              </div>
+              <button id="btn-play-again" class="arcade-btn btn-glow">PLAY AGAIN (R)</button>
+            </div>
+          </div>
+
+          <!-- Start Screen Overlay -->
+          <div id="start-overlay" class="game-overlay">
+            <div class="modal-card start-card">
+              <h2>READY TO PLAY?</h2>
+              <p class="start-desc">Clear lines, score massive combos, and reach the highest level!</p>
+              <div class="quick-controls">
+                <div><kbd>←</kbd> <kbd>→</kbd> Move</div>
+                <div><kbd>↑</kbd> / <kbd>X</kbd> Rotate CW</div>
+                <div><kbd>Z</kbd> Rotate CCW</div>
+                <div><kbd>SPACE</kbd> Hard Drop</div>
+                <div><kbd>↓</kbd> Soft Drop</div>
+                <div><kbd>C</kbd> Hold</div>
+              </div>
+              <button id="btn-start" class="arcade-btn btn-primary btn-glow">START GAME</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Next Queue & Level Goal -->
+      <aside class="panel side-panel right-panel">
+        <div class="panel-box next-box">
+          <h2 class="panel-title">NEXT</h2>
+          <div class="next-canvas-wrapper">
+            <canvas id="next-canvas" width="120" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="panel-box controls-card">
+          <h2 class="panel-title">CONTROLS</h2>
+          <ul class="controls-list">
+            <li><span>Move</span> <kbd>←</kbd> <kbd>→</kbd></li>
+            <li><span>Rotate</span> <kbd>↑</kbd> / <kbd>Z</kbd> <kbd>X</kbd></li>
+            <li><span>Hard Drop</span> <kbd>SPACE</kbd></li>
+            <li><span>Soft Drop</span> <kbd>↓</kbd></li>
+            <li><span>Hold Piece</span> <kbd>C</kbd> / <kbd>⇧</kbd></li>
+            <li><span>Pause</span> <kbd>P</kbd> / <kbd>ESC</kbd></li>
+            <li><span>Restart</span> <kbd>R</kbd></li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Mobile / Touch On-Screen Controller -->
+    <nav class="touch-controls" id="touch-controls" aria-label="Touch Controls">
+      <div class="touch-row top-touch-row">
+        <button class="t-btn t-hold" id="t-hold" title="Hold Piece">HOLD</button>
+        <button class="t-btn t-rot-ccw" id="t-rot-ccw" title="Rotate Counter-Clockwise">↺ CCW</button>
+        <button class="t-btn t-rot-cw" id="t-rot-cw" title="Rotate Clockwise">↻ CW</button>
+      </div>
+      <div class="touch-row main-touch-row">
+        <div class="d-pad">
+          <button class="t-btn t-dir t-left" id="t-left" title="Move Left">◀</button>
+          <div class="d-pad-vertical">
+            <button class="t-btn t-dir t-up" id="t-up" title="Rotate Clockwise">▲</button>
+            <button class="t-btn t-dir t-down" id="t-down" title="Soft Drop">▼</button>
+          </div>
+          <button class="t-btn t-dir t-right" id="t-right" title="Move Right">▶</button>
+        </div>
+        <div class="action-pad">
+          <button class="t-btn t-harddrop" id="t-harddrop" title="Hard Drop">
+            <span>⚡ HARD DROP</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
